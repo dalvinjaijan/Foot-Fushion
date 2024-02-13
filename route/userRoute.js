@@ -70,6 +70,11 @@ userRoute.post('/checkOut',validate.requireAuth,orderController.postCheckOut)
 userRoute.post('/checkOutAddress',validate.requireAuth,profileController.checkOutAddress)
 
 userRoute.post('/changeDefaultAddress',orderController.changePrimary)
+userRoute.get('/profileorderList',validate.requireAuth,orderController.orderList)
+userRoute.get('/orderDetails',validate.requireAuth,orderController.orderDetails)
+userRoute.post('/cancelOrder',orderController.cancelOrder)
+
+
 
 
 

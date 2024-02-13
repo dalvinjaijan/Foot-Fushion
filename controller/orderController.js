@@ -2,6 +2,7 @@ const User = require('../model/userModel')
 const Address = require("../model/addressModel");
 const Cart = require('../model/cartModel');
 const orderHelper=require('../helpers/orderHelper')
+const Order=require('../model/orderModel')
 const checkOut = async (req,res)=>{         
     try {
         const user = res.locals.user
@@ -112,9 +113,63 @@ const changePrimary = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   }
+
+  const orderList  = async(req,res)=>{
+    try {
+      const user  = res.locals.user
+      const currentDate = new Date() 
+  
+      // const order = await Order.findOne({user:user._id})
+      const orders = await Order.aggregate([
+        {$match:{user:user._id}},
+        { $unwind: "$orders" },
+        { $sort: { "orders.createdAt": -1 } },
+      ])
+      const datess = currentDate-orders[0].orders.createdAt
+      await(datess / (1000 * 3600 * 24))
+      res.render('profileOrder',{orders,currentDate})
+  
+      
+     
+    } catch (error) {
+      console.log(error.message);
+      
+    }
+  
+  
+  }
+
+
+  const orderDetails = async (req,res)=>{
+    try {
+      const user = res.locals.user
+      const id = req.query.id
+      orderHelper.findOrder(id, user._id).then((orders) => {
+        const address = orders[0].shippingAddress
+        const products = orders[0].productDetails 
+        res.render('orderDetails',{orders,address,products})
+      });      
+    } catch (error) {
+      console.log(error.message);
+    }
+  
+  }
+
+  const cancelOrder=async(req,res)=>{
+    const orderId=req.body.orderId
+    const status=req.body.status
+    const reason=req.body.reason
+
+    orderHelper.cancelOrder(orderId,status,reason).then((response)=>{
+      res.send(response)
+    })
+  }
   
 module.exports={
     checkOut,
     changePrimary,
-    postCheckOut
+    postCheckOut,
+    orderDetails,
+    orderList,
+    cancelOrder
 }

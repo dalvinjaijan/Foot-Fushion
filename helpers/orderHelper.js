@@ -208,10 +208,57 @@ const checkStock = async(userId)=>{
               .catch((error) => reject(error));
           });
         };
+        const findOrder  = (orderId, userId) => {
+          try {
+            return new Promise((resolve, reject) => {
+              Order.aggregate([
+                {
+                  $match: {
+                    "orders._id": new ObjectId(orderId),
+                    user: new ObjectId(userId),
+                  },
+                },
+                { $unwind: "$orders" },
+              ]).then((response) => {
+                let orders = response
+                  .filter((element) => {
+                    if (element.orders._id == orderId) {
+                      return true;
+                    }
+                    return false;
+                  })
+                  .map((element) => element.orders);
+        
+                resolve(orders);
+              });
+            });
+          } catch (error) {
+            console.log(error.message);
+          }
+        } 
+
+
+        const cancelOrder=async(orderId,status,reason)=>{
+          try {
+            return new Promise((resolve,reject)=>{
+              Order.updateOne(
+                {"orders._id":new ObjectId(orderId)},
+                {$set:{"orders.$.orderStatus":status,"orders.$.reason":reason}}
+              ).then((response)=>{
+                resolve(response)
+              })
+            })
+          } catch (error) {
+            console.log(error.message)
+          }
+          
+        }
     
 
     module.exports={checkStock,
         updateStock,
         getOrderList,
-        placeOrder
+        placeOrder,
+        findOrder,
+        cancelOrder
     }

@@ -2,8 +2,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 require('dotenv').config(); // Module to Load environment variables from .env file
 
-const requireAuth = (req, res, next) => {
+const requireAuth = async(req, res, next) => {
   const token = req.cookies.jwt;
+  const userId=res.locals.user._id
+  const user=await User.findOne({_id:userId})
+  
+
 
   // check json web token exists & is verified
   if (token) {
@@ -11,9 +15,13 @@ const requireAuth = (req, res, next) => {
       if (err) {
         console.log(err.message);
         res.redirect('/login');
-      } else {
-        next();
-      }
+      } else if(user.is_Blocked==true){
+        res.cookie('jwt','',{maxAge:1})
+        res.redirect('/')
+        }else{
+          next()
+        }
+      
     });
   } else {
     res.redirect('/login');
