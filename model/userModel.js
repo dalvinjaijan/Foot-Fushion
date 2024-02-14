@@ -29,6 +29,16 @@ const userSchema=mongoose.Schema({
     is_admin:{
         type:Number,
         default:0
+    },
+    wallet:{
+        type:Number,
+        default:0
+    },
+    walletTransaction:{
+        type:Array
+    },
+    coupons:{
+        type:Array,
     }
 })
 

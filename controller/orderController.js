@@ -2,7 +2,9 @@ const User = require('../model/userModel')
 const Address = require("../model/addressModel");
 const Cart = require('../model/cartModel');
 const orderHelper=require('../helpers/orderHelper')
-const Order=require('../model/orderModel')
+const couponHelper=require('../helpers/couponHelper')
+const Order=require('../model/orderModel');
+const { response } = require('express');
 const checkOut = async (req,res)=>{         
     try {
         const user = res.locals.user
@@ -78,6 +80,8 @@ const changePrimary = async (req, res) => {
       const userId = res.locals.user._id;
       const data = req.body;
       const userData = await User.findById(userId);
+      const couponCode=data.couponCode
+      await couponHelper.addCouponToUser(couponCode, userId);
       
       
       req.session.wallet=data.wall1
@@ -165,11 +169,32 @@ const changePrimary = async (req, res) => {
     })
   }
   
+
+  const applyCoupon=async(req,res)=>{
+    const userId=res.locals.user._id
+    const couponCode=req.params.id
+    const total=await orderHelper.totalCheckOutAmount(userId)
+    console.log(total)
+    couponHelper.applyCoupon(couponCode,total).then((response)=>{
+      res.send(response)
+    })
+}
+
+const verifyCoupon=async(req,res)=>{
+  const userId=res.locals.user._id
+  const couponCode=req.params.id
+  couponHelper.verifyCoupon(userId,couponCode).then((response)=>{
+    res.send(response)
+  })
+}
+
 module.exports={
     checkOut,
     changePrimary,
     postCheckOut,
     orderDetails,
     orderList,
-    cancelOrder
+    cancelOrder,
+    applyCoupon,
+    verifyCoupon
 }
