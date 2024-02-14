@@ -4,6 +4,7 @@ const adminController = require('../controller/adminController')
 const validate=require('../middleware/adminAuth')
 const categoryController=require('../controller/categoryController')
 const productController=require('../controller/productController')
+const couponController=require('../controller/couponController')
 const multer=require('../multer/multer')
 
 
@@ -61,6 +62,15 @@ adminRoute.use(session({
   adminRoute.get('/orderDetails',validate.requireAuth,adminController.orderDetails)
   adminRoute.put('/orderStatus',adminController.changeStatus)  
   adminRoute.put('/cancelOrder',adminController.cancelOrder)
+//return need to rite
+
+
+//coupon
+  adminRoute.get('/addCoupon',validate.requireAuth,couponController.loadAddCoupon)
+  adminRoute.post('/addCoupon',validate.requireAuth,couponController.addCoupon)
+  adminRoute.get('/generate-coupon-code',validate.requireAuth,couponController.generateCouponCode)
+  adminRoute.get('/couponList',validate.requireAuth,couponController.listCoupon)
+  adminRoute.delete('/removeCoupon',validate.requireAuth,couponController.removeCoupon)
 
 
 

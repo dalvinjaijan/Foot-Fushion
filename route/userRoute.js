@@ -6,6 +6,7 @@ const categoryController=require('../controller/categoryController')
 const profileController=require('../controller/profileController')
 const cartController=require('../controller/cartController')
 const orderController=require('../controller/orderController')
+const couponController=require('../controller/couponController')
 const validate=require('../middleware/authMiddleware')
 userRoute.use(express.json())
 userRoute.use(express.urlencoded({extended:true}))
@@ -73,6 +74,9 @@ userRoute.post('/changeDefaultAddress',orderController.changePrimary)
 userRoute.get('/profileorderList',validate.requireAuth,orderController.orderList)
 userRoute.get('/orderDetails',validate.requireAuth,orderController.orderDetails)
 userRoute.post('/cancelOrder',orderController.cancelOrder)
+//coupon
+userRoute.get('/applyCoupon/:id',validate.requireAuth,orderController.applyCoupon)
+userRoute.get('/couponVerify/:id',validate.requireAuth,orderController.verifyCoupon)
 
 
 
