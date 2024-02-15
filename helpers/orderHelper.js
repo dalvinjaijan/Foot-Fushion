@@ -60,6 +60,7 @@ const checkStock = async(userId)=>{
         }
 
         const placeOrder = async (data, user) => {
+          
           return new Promise(async (resolve, reject) => {
           try {
             
@@ -120,9 +121,53 @@ const checkStock = async(userId)=>{
               
               if (data.paymentOption === 'cod') {
                 const userData = await User.findById(user);
+                
+                if(data.wall1=="1"){
+                  const walletTransaction = {
+                    date: new Date(),
+                    type: 'Debit',
+                    amount: userData.wallet,
+                };
+                  userData.wallet = 0;
+                      await userData.save();
+          
+                     
+                      
+                      await User.updateOne(
+                          { _id: user },
+                          { $push: { walletTransaction: walletTransaction } }
+                      );
+                }
                   status = 'Success';
                   orderStatus = 'Placed';
-              }else {
+              }else if (data.paymentOption === 'wallet') {
+                console.log("wallet payment initiated");
+                const userData = await User.findById(user);
+                
+                if (userData.wallet < data.total) {
+      
+                   
+                    throw new Error('Insufficient wallet balance!');
+                    
+                } else {
+                    userData.wallet -= data.total;
+                    await userData.save();
+                    
+                    status = 'Success';
+                    orderStatus = 'Placed';
+                    
+                    const walletTransaction = {
+                        date: new Date(),
+                        type: 'Debit',
+                        amount: data.total,
+                    };
+                    
+                    await User.updateOne(
+                        { _id: user },
+                        { $push: { walletTransaction: walletTransaction } }
+                    );
+                }
+            }else {
                   status = 'Pending';
                   orderStatus = 'Pending';
               }
