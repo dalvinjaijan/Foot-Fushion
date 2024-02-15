@@ -60,6 +60,10 @@ userRoute.post('/updateAddress',validate.requireAuth,profileController.submitAdd
 
 
 
+
+
+
+
 //cart
 userRoute.get('/cart',validate.requireAuth,cartController.loadCart)
 userRoute.post('/addToCart/:id',validate.requireAuth,cartController.addToCart)
@@ -71,6 +75,10 @@ userRoute.post('/checkOut',validate.requireAuth,orderController.postCheckOut)
 userRoute.post('/checkOutAddress',validate.requireAuth,profileController.checkOutAddress)
 
 userRoute.post('/changeDefaultAddress',orderController.changePrimary)
+
+userRoute.get('/wallet',profileController.walletTransaction)
+userRoute.get('/walletStatus/:id',validate.requireAuth,orderController.walletStatus)
+
 userRoute.get('/profileorderList',validate.requireAuth,orderController.orderList)
 userRoute.get('/orderDetails',validate.requireAuth,orderController.orderDetails)
 userRoute.post('/cancelOrder',orderController.cancelOrder)

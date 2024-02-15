@@ -11,6 +11,7 @@ const checkOut = async (req,res)=>{
         const total = await Cart.findOne({ user: user.id });
         const address = await Address.findOne({user:user._id}).lean().exec()
         const userData =  await user.wallet
+        console.log(userData);
         
         
         const cart = await Cart.aggregate([
@@ -85,6 +86,7 @@ const changePrimary = async (req, res) => {
       
       
       req.session.wallet=data.wall1
+      
      
       try { 
         
@@ -97,13 +99,19 @@ const changePrimary = async (req, res) => {
         if (data.paymentOption === "cod") { 
           const updatedStock = await orderHelper.updateStock(userId)
         const response = await orderHelper.placeOrder(data,userId);
-        console.log(response)
+        
 
           await Cart.deleteOne({ user:userId  })
           res.json({ codStatus: true });
         } 
           
-      }else{
+      }else if (data.paymentOption === "wallet") {
+        console.log(data)
+        const updatedStock = await orderHelper.updateStock(userId)
+        const response = await orderHelper.placeOrder(data,userId);
+        res.json({ orderStatus: true, message: "order placed successfully" });
+        await Cart.deleteOne({ user:userId  })
+    }else{
         await Cart.deleteOne({ user:userId  })  
         res.json({ status: 'OrderFailed' });
       }
@@ -188,6 +196,33 @@ const verifyCoupon=async(req,res)=>{
   })
 }
 
+const walletStatus = async(req,res)=>{
+  const id= res.locals.user._id;
+  try {
+    const user= await User.findOne({_id:id})
+    const cart = await Cart.findOne({ user:id });
+   const wallet=user.wallet
+   const total=cart.total
+     user.wallet=0;
+     await user.save()
+
+
+
+    if(checkBox.checked){
+    const userData = await User.findById(user);
+    userData.wallet = 0;
+    }
+    else{
+      userData.wallet = user.wallet
+    }
+    
+
+  } catch (error) {
+    console.log(error.message);
+  }
+
+}
+
 module.exports={
     checkOut,
     changePrimary,
@@ -196,5 +231,6 @@ module.exports={
     orderList,
     cancelOrder,
     applyCoupon,
-    verifyCoupon
+    verifyCoupon,
+    walletStatus
 }

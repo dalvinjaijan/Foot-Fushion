@@ -196,12 +196,33 @@ const updatePassword = async (req, res) => {
 //         throw error;
 //     }
 // };
+
+const walletTransaction = async(req,res)=>{
+  try {
+    const user = res.locals.user
+    // const userData= await User.findOne({_id:user._id})
+    const wallet = await User.aggregate([
+      {$match:{_id:user._id}},
+      {$unwind:"$walletTransaction"},
+      {$sort:{"walletTransaction.date":-1}},
+      {$project:{walletTransaction:1,wallet:1}}
+    ])
+
+    res.render('walletTransaction',{wallet})
+    
+  } catch (error) {
+    console.log(error.message);
+  }
+
+
+}
   module.exports={
     profile,
     profileAddress,
     submitAddress,
     checkOutAddress,
     updateProfile,
-    updatePassword
-    // deleteAddress
+    updatePassword,
+    // deleteAddress,
+    walletTransaction
   }
