@@ -87,6 +87,10 @@ userRoute.get('/applyCoupon/:id',validate.requireAuth,orderController.applyCoupo
 userRoute.get('/couponVerify/:id',validate.requireAuth,orderController.verifyCoupon)
 
 
+userRoute.post('/verifyPayment',orderController.verifyPayment)  
+userRoute.post('/paymentFailed',orderController.paymentFailed)  
+
+
 
 
 

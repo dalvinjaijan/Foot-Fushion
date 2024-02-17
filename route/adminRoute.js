@@ -62,7 +62,8 @@ adminRoute.use(session({
   adminRoute.get('/orderDetails',validate.requireAuth,adminController.orderDetails)
   adminRoute.put('/orderStatus',adminController.changeStatus)  
   adminRoute.put('/cancelOrder',adminController.cancelOrder)
-//return need to rite
+  adminRoute.put('/returnOrder',adminController.returnOrder)
+
 
 
 //coupon

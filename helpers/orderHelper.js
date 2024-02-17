@@ -5,6 +5,15 @@ const { ObjectId } = require("mongodb");
 const Address=require('../model/addressModel')
 const User=require('../model/userModel')
 
+const Razorpay = require("razorpay");
+
+require('dotenv').config();
+
+var instance = new Razorpay({
+  key_id: process.env.RAZORPAY_ID,
+  key_secret: process.env.RAZORPAY_SECRET,
+});
+
 const getOrderId = async (user)=>{
   try {
     const latestOrder = await Order.aggregate([
@@ -59,174 +68,170 @@ const checkStock = async(userId)=>{
         return true
         }
 
-        const placeOrder = async (data, user) => {
+const placeOrder = async (data, user) => {
+  return new Promise(async (resolve, reject) => {
+  try {
+    
+        const productDetails = await Cart.aggregate([
+          {
+              $match: {
+                  user: user.toString(),
+              },
+          },
+          {
+              $unwind: "$cartItems",
+          },
+          {
+              $project: {
+                  item: "$cartItems.productId",
+                  quantity: "$cartItems.quantity",
+              },
+          },
           
-          return new Promise(async (resolve, reject) => {
-          try {
-            
-                const productDetails = await Cart.aggregate([
-                  {
-                      $match: {
-                          user: user.toString(),
-                      },
-                  },
-                  {
-                      $unwind: "$cartItems",
-                  },
-                  {
-                      $project: {
-                          item: "$cartItems.productId",
-                          quantity: "$cartItems.quantity",
-                      },
-                  },
-                  
-                  {
-                      $lookup: {
-                          from: "products",
-                          localField: "item",
-                          foreignField: "_id",
-                          as: "productDetails",
-                      },
-                  },
-                  {
-                      $unwind: "$productDetails",
-                  },
-                  {
-                      $project: {
-                          productId: "$productDetails._id",
-                          productName: "$productDetails.name",
-                          productPrice: "$productDetails.price",
-                          quantity: "$quantity",
-                          category: "$productDetails.category",
-                          image: "$productDetails.images",
-                      },
-                  },
-              ]);
-              const addressData = await Address.aggregate([
-                {
-                    $match: { user: user.toString() },
-                },
-                {
-                    $unwind: "$address",
-                },
-                {
-                    $match: { "address._id": new ObjectId(data.address) },
-                },
-                {
-                    $project: { item: "$address" },
-                },
-              ]);
-              
-              let status, orderStatus;
-              
-              if (data.paymentOption === 'cod') {
-                const userData = await User.findById(user);
-                
-                if(data.wall1=="1"){
-                  const walletTransaction = {
-                    date: new Date(),
-                    type: 'Debit',
-                    amount: userData.wallet,
-                };
-                  userData.wallet = 0;
-                      await userData.save();
-          
-                     
-                      
-                      await User.updateOne(
-                          { _id: user },
-                          { $push: { walletTransaction: walletTransaction } }
-                      );
-                }
-                  status = 'Success';
-                  orderStatus = 'Placed';
-              }else if (data.paymentOption === 'wallet') {
-                console.log("wallet payment initiated");
-                const userData = await User.findById(user);
-                
-                if (userData.wallet < data.total) {
+          {
+              $lookup: {
+                  from: "products",
+                  localField: "item",
+                  foreignField: "_id",
+                  as: "productDetails",
+              },
+          },
+          {
+              $unwind: "$productDetails",
+          },
+          {
+              $project: {
+                  productId: "$productDetails._id",
+                  productName: "$productDetails.name",
+                  productPrice: "$productDetails.price",
+                  quantity: "$quantity",
+                  category: "$productDetails.category",
+                  image: "$productDetails.images",
+              },
+          },
+      ]);
+      const addressData = await Address.aggregate([
+        {
+            $match: { user: user.toString() },
+        },
+        {
+            $unwind: "$address",
+        },
+        {
+            $match: { "address._id": new ObjectId(data.address) },
+        },
+        {
+            $project: { item: "$address" },
+        },
+      ]);
       
-                   
-                    throw new Error('Insufficient wallet balance!');
-                    
-                } else {
-                    userData.wallet -= data.total;
-                    await userData.save();
-                    
-                    status = 'Success';
-                    orderStatus = 'Placed';
-                    
-                    const walletTransaction = {
-                        date: new Date(),
-                        type: 'Debit',
-                        amount: data.total,
-                    };
-                    
-                    await User.updateOne(
-                        { _id: user },
-                        { $push: { walletTransaction: walletTransaction } }
-                    );
-                }
-            }else {
-                  status = 'Pending';
-                  orderStatus = 'Pending';
-              }
-              
-              const orderId = await getOrderId(user);
-        
-              
-              
-              const orderData = {
-                  _id: new ObjectId(),
-                  orderNumber: orderId,
-                  name: addressData[0].item.name,
-                  paymentStatus: status,
-                  paymentMethod: data.paymentOption,
-                  productDetails: productDetails,
-                  shippingAddress: addressData[0],
-                  orderStatus: orderStatus,
-                  totalPrice: data.total,
-                  discountPercentage: data.discountPercentage,
-                  discountAmount: data.discountAmount,
-                  couponCode: data.couponCode,
-                  cancelStatus: 'false',
-                  createdAt: new Date(),
-              };
-              // console.log(orderData);
-              const order = await Order.findOne({ user: user });
-              
-              if (order) {
-                await Order.updateOne(
-                  { user: user },
-                  { $push: { orders: orderData } }
-                ).then((response) => {
-                  resolve(response);
-                }).catch((error) => {
-                  reject(error);
-                });
-              } else {
-                const newOrder = await Order({
-                  user: user,
-                  orders: orderData,
-                });
-          
-                await newOrder.save().then((response) => {
-                  resolve(response);
-                }).catch((error) => {
-                  reject(error);
-                });
-              }
-          
-        
-              // return orderData; // Return the orderData on success
-              
-          } catch (error) {
-              console.log(error.message);
-              // throw error; // Re-throw the error to be caught by the caller
-          }
-        })
+      let status, orderStatus;
+      
+      if (data.paymentOption === 'cod') {
+        const userData = await User.findById(user);
+        if(data.wall1=="1"){
+          const walletTransaction = {
+            date: new Date(),
+            type: 'Debit',
+            amount: userData.wallet,
         };
+          userData.wallet = 0;
+              await userData.save();
+  
+             
+              
+              await User.updateOne(
+                  { _id: user },
+                  { $push: { walletTransaction: walletTransaction } }
+              );
+        }
+          status = 'Success';
+          orderStatus = 'Placed';
+      } else if (data.paymentOption === 'wallet') {
+          const userData = await User.findById(user);
+          
+          if (userData.wallet < data.total) {
 
+             
+              throw new Error('Insufficient wallet balance!');
+              
+          } else {
+              userData.wallet -= data.total;
+              await userData.save();
+              
+              status = 'Success';
+              orderStatus = 'Placed';
+              
+              const walletTransaction = {
+                  date: new Date(),
+                  type: 'Debit',
+                  amount: data.total,
+              };
+              
+              await User.updateOne(
+                  { _id: user },
+                  { $push: { walletTransaction: walletTransaction } }
+              );
+          }
+      } else {
+          status = 'Pending';
+          orderStatus = 'Pending';
+      }
+      
+      const orderId = await getOrderId(user);
+
+      
+      
+      const orderData = {
+          _id: new ObjectId(),
+          orderNumber: orderId,
+          name: addressData[0].item.name,
+          paymentStatus: status,
+          paymentMethod: data.paymentOption,
+          productDetails: productDetails,
+          shippingAddress: addressData[0],
+          orderStatus: orderStatus,
+          totalPrice: data.total,
+          discountPercentage: data.discountPercentage,
+          discountAmount: data.discountAmount,
+          couponCode: data.couponCode,
+          cancelStatus: 'false',
+          createdAt: new Date(),
+      };
+      // console.log(orderData);
+      const order = await Order.findOne({ user: user });
+      
+      if (order) {
+        await Order.updateOne(
+          { user: user },
+          { $push: { orders: orderData } }
+        ).then((response) => {
+          resolve(response);
+        }).catch((error) => {
+          reject(error);
+        });
+      } else {
+        const newOrder = await Order({
+          user: user,
+          orders: orderData,
+        });
+  
+        await newOrder.save().then((response) => {
+          resolve(response);
+        }).catch((error) => {
+          reject(error);
+        });
+      }
+  
+
+      // return orderData; // Return the orderData on success
+      
+  } catch (error) {
+      console.log(error.message);
+      // throw error; // Re-throw the error to be caught by the caller
+  }
+})
+};
 
         const getOrderList = (page, limit) => {
           return new Promise((resolve, reject) => {
@@ -337,6 +342,86 @@ const checkStock = async(userId)=>{
           console.log(error.message);
           }
         }
+
+        const generateRazorpay = (userId, total)=> {
+          // console.log(userId,total)
+          try {
+            return new Promise(async (resolve, reject) => {
+              let orders = await Order.find({ user: userId });
+        
+              let order = orders[0].orders.slice().reverse();
+            
+              let orderId = order[0]._id;
+        
+              var options = {
+                amount: total * 100, 
+                currency: "INR",
+                receipt: "" + orderId,
+              };
+              instance.orders.create(options, function (err, order) {
+                if (err) {
+                  console.log(err);
+                } else {
+                  resolve(order);
+                }
+              });
+            });
+          } catch (error) { 
+            console.log(error.message);
+          }
+        }
+
+        const verifyPayment =  async(details) => {
+          try {
+            await Order.updateOne({})
+        
+            let key_secret = process.env.RAZORPAY_SECRET;
+            return new Promise((resolve, reject) => {
+              const crypto = require("crypto");
+              let hmac = crypto.createHmac("sha256", key_secret);
+        
+        
+              hmac.update(
+                details.payment.razorpay_order_id +
+                  "|" +
+                  details.payment.razorpay_payment_id
+              );
+              hmac = hmac.digest("hex");
+              if (hmac == details.payment.razorpay_signature) {
+        
+                resolve();
+              } else {
+                reject("not match");
+              }
+            });
+          } catch (error) {
+            console.log(error.message);
+          }
+        }
+    
+        const changePaymentStatus =  (userId, orderId,razorpayId) => {
+          try {
+            return new Promise(async (resolve, reject) => {
+              await Order.updateOne(
+                { "orders._id": new ObjectId(orderId) },
+                {
+                  $set: {
+                    "orders.$.orderStatus": "Placed",
+                    "orders.$.paymentStatus": "Success",
+                    "orders.$.razorpayId": razorpayId
+                  },
+                }
+              ),
+                await updateStock(userId)
+                Cart.deleteMany({ user: userId }).then(() => {
+                  resolve();
+                });
+            });
+          } catch (error) { 
+            console.log(error.message);
+          }
+        }
+        
     
 
     module.exports={checkStock,
@@ -345,5 +430,8 @@ const checkStock = async(userId)=>{
         placeOrder,
         findOrder,
         cancelOrder,
-        totalCheckOutAmount
+        totalCheckOutAmount,
+        generateRazorpay,
+        verifyPayment,
+        changePaymentStatus
     }
