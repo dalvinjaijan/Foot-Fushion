@@ -155,6 +155,18 @@ const logout = (req,res) =>{
   
   }
   
+  const returnOrder = async(req,res)=>{
+    const orderId = req.body.orderId
+    const status = req.body.status
+    const userId = req.body.userId
+  
+  
+    adminHelper.returnOrder(orderId,userId,status).then((response) => {
+      res.send(response);
+    });
+  
+  }  
+
 
 module.exports={
     loadLogin,
@@ -167,5 +179,6 @@ module.exports={
     orderList,
     orderDetails,
     changeStatus,
-    cancelOrder
+    cancelOrder,
+    returnOrder
 }

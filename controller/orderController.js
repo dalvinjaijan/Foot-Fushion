@@ -81,37 +81,37 @@ const changePrimary = async (req, res) => {
       const userId = res.locals.user._id;
       const data = req.body;
       const userData = await User.findById(userId);
-      const couponCode=data.couponCode
+      
+      const couponCode = data.couponCode
       await couponHelper.addCouponToUser(couponCode, userId);
-      
-      
+  
       req.session.wallet=data.wall1
-      
      
       try { 
         
         const checkStock = await orderHelper.checkStock(userId)
-        console.log(checkStock);
        
   
   
         if(checkStock){
         if (data.paymentOption === "cod") { 
           const updatedStock = await orderHelper.updateStock(userId)
-        const response = await orderHelper.placeOrder(data,userId);
-        
-
+          const response = await orderHelper.placeOrder(data,userId);
           await Cart.deleteOne({ user:userId  })
           res.json({ codStatus: true });
         } 
-          
-      }else if (data.paymentOption === "wallet") {
-        console.log(data)
-        const updatedStock = await orderHelper.updateStock(userId)
-        const response = await orderHelper.placeOrder(data,userId);
-        res.json({ orderStatus: true, message: "order placed successfully" });
-        await Cart.deleteOne({ user:userId  })
-    }else{
+          else if (data.paymentOption === "wallet") {
+            const updatedStock = await orderHelper.updateStock(userId)
+            const response = await orderHelper.placeOrder(data,userId);
+            res.json({ orderStatus: true, message: "order placed successfully" });
+            await Cart.deleteOne({ user:userId  })
+        }else if (data.paymentOption === "razorpay") {
+          const response = await orderHelper.placeOrder(data,userId);
+          const order = await orderHelper.generateRazorpay(userId,data.total);
+          res.json(order);
+         
+        }
+      }else{
         await Cart.deleteOne({ user:userId  })  
         res.json({ status: 'OrderFailed' });
       }
@@ -125,6 +125,8 @@ const changePrimary = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   }
+  
+  
 
   const orderList  = async(req,res)=>{
     try {
@@ -223,6 +225,66 @@ const walletStatus = async(req,res)=>{
 
 }
 
+const verifyPayment = async (req, res) => {
+  const userId = res.locals.user._id;
+  const data = req.session.wallet;
+  console.log("razorwall"+data);
+  
+  if(data=="1"){
+    const userData = await User.findById(userId);
+    const wallet=userData.wallet
+    const walletTransaction = {
+      date: new Date(),
+      type: 'Debit',
+      amount: userData.wallet,
+  };
+    userData.wallet = 0;
+        await userData.save();
+
+       
+        
+        await User.updateOne(
+            { _id: userId },
+            { $push: { walletTransaction: walletTransaction } }
+        );
+  
+
+
+  }
+  const orderId = req.body.order.receipt
+
+  orderHelper.verifyPayment(req.body).then(() => {
+    orderHelper
+      .changePaymentStatus(res.locals.user._id, req.body.order.receipt,req.body.payment.razorpay_payment_id)
+      .then(() => {
+        res.json({ status: true });
+      })
+      .catch((err) => {
+        res.json({ status: false });
+      });
+  }).catch(async(err)=>{
+    
+    console.log(err);
+
+  });
+}
+
+const paymentFailed = async(req,res)=>{
+  try {
+    const order = req.body
+    const deleted = await Order.updateOne(
+      { "orders._id": new ObjectId(order.order.receipt) },
+      { $pull: { orders: { _id:new ObjectId(order.order.receipt) } } }
+
+    )
+    res.send({status:true})
+  } catch (error) {
+    
+  }
+  
+}
+
+
 module.exports={
     checkOut,
     changePrimary,
@@ -232,5 +294,7 @@ module.exports={
     cancelOrder,
     applyCoupon,
     verifyCoupon,
-    walletStatus
+    walletStatus,
+    verifyPayment,
+    paymentFailed
 }
