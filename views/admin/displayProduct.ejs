@@ -52,6 +52,10 @@
   opacity: 1;
   visibility: visible;
 }
+.strikethrough {
+    text-decoration: line-through;
+  }
+
 
 </style>
 
@@ -104,6 +108,9 @@
                                 <th>Price</th>
                                 <th>Description</th>
                                 <th>Stock</th>
+                                <th>offer%</th>
+                                <th>Action</th>
+
                                 <th>Status</th>
                                 <th class="text-end"> Action </th>
                             </tr>
@@ -121,10 +128,27 @@
 
                                     </a>
                                 </td>
-                                <td width="20%"><i class="fa fa-inr" aria-hidden="true"></i>
-                                    <%= item.price %></td>
+                                <% if(item.offerPrice==0){%>
+                                    <td width="20%"><i class="fa fa-inr" aria-hidden="true"></i>
+                                        <%= item.price %></td>
+                                <% } else { %> 
+                                
+                                    <td width="20%"><i class="fa fa-inr" aria-hidden="true"></i> <span class="strikethrough"><i class="fa fa-inr" aria-hidden="true"></i><%= item.price %></span>
+                                        <%= item.offerPrice %></td>
+                                <% } %>
+
                                 <td title="<%= item.description %>" class="tooltip-ellipsis"><%= item.description %></td>
                                 <td title="<%= item.stock %>" class="tooltip-ellipsis"><%= item.stock %></td>
+                                
+                                    <td id="offer-<%= item._id %>">
+                                    
+                                <%= item.productOffer %></td>
+
+                                <% if(item.productOffer==0){ %> 
+                                    <td><button class="btn-primary rounded-pill" onclick="addOffer('<%= item._id %>')" >Add offer</button></td>
+                                <% } else{ %> 
+                                    <td><button class="btn-danger rounded-pill" onclick="removeOffer('<%= item._id %>')" >remove offer</button></td>
+                                    <% } %>
                                 <%if(item.isProductListed==true && item.isListed == true){%>
                                   <td><span class="badge rounded-pill alert-success">Active</span></td>
                                 <% } else { %> 
@@ -220,10 +244,84 @@
     <script src="../admin-assets/js/vendors/select2.min.js"></script>
     <script src="../admin-assets/js/vendors/perfect-scrollbar.js"></script>
     <script src="../admin-assets/js/vendors/jquery.fullscreen.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Main Script -->
     <script src="../admin-assets/js/main.js" type="text/javascript"></script>
 </body>
+<script>
+    function addOffer(productId){
+            Swal.fire({
+                title: 'Enter offer percentage',
+                input: 'number',
+                inputAttributes: {
+                    autocapitalize: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                showLoaderOnConfirm: true,
+                preConfirm: (value) => {
+                    if (!value || isNaN(value)) {
+                        Swal.showValidationMessage('Please enter a valid number');
+                    } else {
+                        // Perform AJAX call to update offer percentage
+                        $.ajax({
+                            url: '/admin/updateProductOffer', // Replace with your server endpoint to update offer percentage
+                            method: 'POST',
+                            data: {
+                                productId: productId,
+                                productOffer: value // Changed to productOffer
+                            },
+                            
+                            success: function(response) {
+                                // Update offer percentage in the table
+                                $('#offer-' + productId).text(value);
+                                Swal.fire({
+                                    title: `Offer percentage updated to: ${value}%`,
+                                    icon: 'success'
+                                });
+                                location.reload()
+                            },
+                            error: function(xhr, status, error) {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Failed to update offer percentage',
+                                    icon: 'error'
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }
 
+        function removeOffer(productId){
+            $.ajax({
+                url:'/admin/removeProductOffer',
+                method:'POST',
+                data:{
+                    productId:productId
+                },
+                    success: function(response) {
+                                // Update offer percentage in the table
+                               
+                                Swal.fire({
+                                    title: "Offer removed successfully",
+                                    icon: 'success'
+                                });
+                                location.reload()
+
+                            },
+                            error: function(xhr, status, error) {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Failed to remove offer percentage',
+                                    icon: 'error'
+                                });
+                            }
+            })
+        }
+</script>
 
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/page-products-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:33:12 GMT -->
 </html>0

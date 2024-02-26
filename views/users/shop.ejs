@@ -59,6 +59,10 @@
   opacity: 1;
   visibility: visible;
 }
+.strikethrough {
+    text-decoration: line-through;
+  }
+
 
 </style>
 <body id="category">
@@ -154,10 +158,17 @@
                   <small><%=item.category.name%></small>
 				  <h6 title="<%=item.name %>" class="tooltip-ellipsis"><%=item.name %></h6>
 
-
 									<div class="price">
-										<h6><i class="fa fa-inr" aria-hidden="true"> </i> <%= item.price%></h6>
+									<% if(item.categoryOffer >= item.productOffer && item.categoryOffer!=0){ %>
+										<span class="strikethrough"><i class="fa fa-inr" aria-hidden="true"></i><%= item.price %></span>
+										<h6><%= item.catOfferPrice %> </h6>
+										<% }else if(item.productOffer>0){ %>
 									
+										<span class="strikethrough"><i class="fa fa-inr" aria-hidden="true"></i><%= item.price %></span>
+										<h6><%= item.offerPrice %></h6>
+										<% }else{ %>
+											<h6><i class="fa fa-inr" aria-hidden="true"> </i> <%= item.price%></h6>
+									<% } %>
 									</div>
 									<div class="prd-bottom">
 
@@ -275,11 +286,12 @@
 
 
 	<script>
+		
 		function addtocart(proId) {
 		  $.ajax({
 			url: '/addToCart/' + proId,
 			method: 'POST',
-	  
+			
 			success: (response) => {
 			  if (response.status==true) {
 				Swal.fire({
@@ -287,7 +299,10 @@
 				  text: 'Your Product has been added to Cart',
 				  icon: 'success',
 				  timer: 5000
+				  
 				})
+				location.reload()
+				
 				
 			  }else if(response.status=='outOfStock'){
 				Swal.fire({
@@ -336,6 +351,22 @@
       }
     })
   }
+
+const cartBadge= document.getElementById('cart-badge')
+
+const cartItemCount = <%= (cart.cartItems.length !== undefined ? cart.cartItems.length : 0) %>;
+
+console.log(cartItemCount,"hkh")
+cartBadge.textContent = cartItemCount;
+
+
+if (cartItemCount === 0) {
+  cartBadge.style.display = 'none';
+} else {
+  cartBadge.style.display = 'block'; // Show the badge if there are items
+}
+
+
 
 
 

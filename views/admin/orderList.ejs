@@ -239,8 +239,9 @@
     }
     function returnOrder(orderId,userId, status)
     {
-      console.log(orderId, status);
+        
       $.ajax({
+        
         url:'/admin/returnOrder',
         method:'put',
         data: {
@@ -257,6 +258,7 @@
         }
       })
     }
+   
     
     
  

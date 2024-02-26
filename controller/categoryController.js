@@ -89,6 +89,74 @@ const loadAddCategory = async(req,res)=>{
     }
 
   }
+  const addCategoryOffer = async (req, res) => {
+    const { catId, categoryOffer } = req.body;
+
+    try {
+         const products = await Product.find({category:catId});
+         
+         const category = await Category.findById(catId);
+
+
+        if (!category) {
+            return res.status(404).json({ success: false, message: 'category not found' });
+        }
+        console.log("adCategory function initiates");
+        category.categoryOffer = categoryOffer;
+        console.log(categoryOffer,"category offer %");
+        
+        if (categoryOffer > 0) {
+          for (const product of products) {
+            const originalPrice = product.price;
+            const discountedPrice = originalPrice - Math.floor((originalPrice * (categoryOffer / 100)));
+            product.catOfferPrice = discountedPrice;
+            category.catOfferPrice = discountedPrice;
+            product.categoryOffer=categoryOffer
+            await product.save(); 
+        }
+        
+        }
+        await category.save()
+       
+
+        return res.status(200).json({ success: true, message: 'category offer updated successfully', category:category });
+    } catch (error) {
+        console.error('Error updating category offer:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const removeCategoryOffer=async(req,res)=>{
+    const { catId } = req.body;
+
+    try {
+      const products = await Product.find({category:catId});
+
+        const category = await Category.findById(catId)
+
+        if (!category) {
+            return res.status(404).json({ success: false, message: 'category not found' });
+        }
+        category.categoryOffer=0
+        category.catOfferPrice=0
+        for(const product of products){
+          product.catOfferPrice=0
+          product.categoryOffer=0
+          product.save()
+        }
+        
+        
+
+        await category.save();
+      
+
+
+        return res.status(200).json({ success: true, message: 'Product offer removed successfully', category: category });
+    } catch (error) {
+        console.error('Error updating product offer:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
 
   const categoryPage = async (req,res) =>{
 
@@ -147,7 +215,9 @@ module.exports={
     updateCategory,
     unListCategory,
     reListCategory,
-    categoryPage
+    categoryPage,
+    addCategoryOffer,
+    removeCategoryOffer
 }
 
 

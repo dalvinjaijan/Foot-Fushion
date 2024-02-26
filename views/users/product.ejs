@@ -77,6 +77,10 @@
 	  transition: transform 0.9s ease-in-out;
 	  transform-origin: center center;
 	}
+	.strikethrough {
+    text-decoration: line-through;
+  }
+
   </style>
 
 <body>
@@ -120,7 +124,17 @@
 				<div class="col-lg-5 offset-lg-1">
 					<div class="s_product_text">
 						<h3><%=product.name%></h3>
-						<h2><i class="fa fa-inr" aria-hidden="true"></i> <%=product.price%></h2>
+						<% if(product.categoryOffer >= product.productOffer && product.categoryOffer!=0){ %>
+							<span class="strikethrough"><i class="fa fa-inr" aria-hidden="true"></i><%= product.price %></span>
+							<span>Offer price: <h2><%= product.catOfferPrice %></h2></span>
+							<span>Discount : <%= product.categoryOffer %> % <h4><%=product.category.name.toUpperCase()%> offer</h4></span>
+						<%} else if(product.productOffer>0){ %>
+							<span class="strikethrough"><i class="fa fa-inr" aria-hidden="true"></i><%= product.price %></span>
+							<span>Offer price: <h2><%= product.offerPrice %></h2></span>
+							<span>Discount : <%= product.productOffer %> % <h4>on this product</h4></span>
+							<% }else{ %>
+								<h6><i class="fa fa-inr" aria-hidden="true"> </i> <%= product.price%></h6>
+						<% } %>
 						<ul class="list">
 							<li><a class= href="#"><span>Category</span> :<%=product.category.name.toUpperCase()%></a></li>
 							<% if (product.stock <= 0) { %>
@@ -437,7 +451,21 @@
 	  var zoomer = event.currentTarget;
 	  zoomer.querySelector('img').style.transform = 'none';
     }
+  const cartBadge= document.getElementById('cart-badge')
+
+  const cartItemCount = <%= (cart.cartItems.length !== undefined ? cart.cartItems.length : 0) %>;
+
+console.log(cartItemCount,"hkh")
+cartBadge.textContent = cartItemCount;
+
+
+if (cartItemCount === 0) {
+    cartBadge.style.display = 'none';
+} else {
+    cartBadge.style.display = 'block'; // Show the badge if there are items
+}
   </script>
+
 </body>
 
 </html>

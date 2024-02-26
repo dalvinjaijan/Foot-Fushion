@@ -5,7 +5,7 @@
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/page-form-product-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:33:32 GMT -->
 <head>
     <meta charset="utf-8">
-    <title>Foot Fushion</title>
+    <title>Stride Spot</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,17 +23,16 @@
     <%- include('../layouts/adminNav.ejs') %>	
 
     <main class="main-wrap">
-        <% if(locals.product){ %>
-        <form action="/admin/updateProduct" method="post" enctype="multipart/form-data">
+   
+        <form action="/admin/updateProduct" method="post" enctype="multipart/form-data" id="myForm">
         <section class="content-main">
-            <input type="hidden" name="id" value="<%= locals.product._id %>"  >
         
             <div class="row">
                 <div class="col-6">
                     <div class="content-header">
                         <h2 class="content-title">Update Product</h2>
                         <div>
-                            <input class="btn btn-md rounded font-sm hover-up" value="Update" type="submit"></input>
+                            <input class="btn btn-md rounded font-sm hover-up" value="update" type="submit"></input>
                         </div>
                     </div>
                 </div>
@@ -46,7 +45,6 @@
                                 <!-- <div class="col-md-3">
                                     <h6>1. General info</h6>
                                 </div> -->
-                               
                                 <div class="col-md-9">
                                     <div class="mb-4">
                                         <label class="form-label">Product title</label>
@@ -104,7 +102,7 @@
                                 </div> -->
                                 <div>
                                 <hr class="mb-4 mt-0">
-                            <div class="col-lg-6">
+                            <!-- <div class="col-lg-6">
                                 <div class="card mb-4">
                                   <div class="card-header">
                                     <h4>Media</h4>
@@ -119,7 +117,7 @@
                                   </div>
                       
                                 </div> <!-- card end// -->
-                              </div>
+                              <!-- </div>
                                 <div class="col-lg-6">
                                     <div class="card mb-4">
                                       <div class="card-header">
@@ -134,8 +132,8 @@
                                         <button type="button" id="saveButton2" class="btn-sm btn-primary">Save</button>
                                       </div>
                           
-                                    </div> <!-- card end// -->
-                                  </div>
+                                    </div>  card end// -->
+                                  <!-- </div>
                                   <div class="col-lg-6">
                                     <div class="card mb-4">
                                       <div class="card-header">
@@ -153,9 +151,26 @@
                                     </div>
                             
                                
-                                
-                                <!-- .row end// -->
-                            </div>
+                                 .row end// -->Media
+                           
+                                     <div class="input-upload">
+                                        <% product.image.forEach(function(el, index) { %>
+                                        <div>
+                                            <!-- Input field for uploading new image -->
+                                            <input id="input<%= index + 1 %>" type="file" name="file<%= index + 1 %>" onchange="viewImage(event, <%= index + 1 %>)" multiple>
+                                            <!-- Display existing image if available -->
+                                            <img style="height: 76px;width: 80px;" src="/product-images/<%= el %>" id="imgView<%= index + 1 %>" alt="Existing Image">
+                                            <!-- <p><%= el %></p> -->
+                                            <a class="btn btn-sm btn-danger rounded font-sm mt-15" onclick="deleteImage('<%= index + 1 %>')">Delete</a>
+                                            <!-- Cropped image container -->
+                                            <div class="image-cropper" style="display:none;">
+                                                <img src="" id="croppedImg<%= index + 1 %>" alt="Cropped Image">
+                                                <button type="button" id="saveButton<%= index + 1 %>" class="btn-sm btn-primary" onclick="saveCroppedImage(<%= index + 1 %>)">Save</button>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                    </div>
+                                    
                             </div> <!-- .row end// -->
                             </div>
                         </div>
@@ -163,8 +178,8 @@
                 </div>
             </div>
             </div>
+            <input type="hidden" value="<%=product._id%>" name="id" >
         </form>
-        <% } %>
         <p><%=(typeof message!=='undefined')?message:""%></p>
 
         </section> <!-- content-main end// -->
@@ -211,10 +226,8 @@ const stockError = document.getElementById("stockError")
 
 function nameValidation(){
 const nameValue = name.value
-const regx = /^[a-zA-Z][a-zA-Z0-9\s]*$/;
-
-    if(nameValue.trim()==0 || !regx.test(nameValue)){
-        nameError.innerHTML = 'Enter a valid product name'
+    if(nameValue.trim()==0){
+        nameError.innerHTML = 'Product title is required'
         nameError.style.color = 'red'
         name.style.border = "solid 2px red";
         return false;
@@ -293,8 +306,6 @@ stockError.innerHTML = ""
 
 }
 
-name.addeventListner('blur',nameValidation)
-description.addeventListner('blur',descriptionValidation)
 
 
 
@@ -305,10 +316,8 @@ description.addeventListner('blur',descriptionValidation)
 
 
 myForm.addEventListener("submit",(event)=>{
-    nameValidation() 
-    descriptionValidation()
     event.preventDefault();
-    if(!nameValidation() || !descriptionValidation() || ! priceValidation()) {
+    if(!nameValidation() || !descriptionValidation() || ! priceValidation() || !stockValidation()) {
         return false
     }else{
         myForm.submit()
@@ -316,8 +325,73 @@ myForm.addEventListener("submit",(event)=>{
 
 })
 </script>
+<!-- Updated HTML for image preview with cropping -->
 
+
+<!-- JavaScript Function to Handle Image Preview and Cropping -->
 <script>
+    function viewImage(event, index) {
+        let input = event.target;
+        let reader = new FileReader();
+        
+        reader.onload = function() {
+            let dataURL = reader.result;
+            let image = document.getElementById('imgView' + index);
+            image.src = dataURL;
+            
+            // Initialize Cropper.js on the image
+            let cropper = new Cropper(image, {
+                aspectRatio: 1 / 1, // Set the aspect ratio to 1:1 for square images
+                viewMode: 1, // Set the view mode to crop box
+                guides: true, // Show the crop guides
+                background: false, // Do not show the background behind the image
+                autoCropArea: 1, // Set the initial crop area to cover the whole image
+                zoomable: true // Disable zooming to keep the image size fixed
+            });
+
+            // Show the image cropper container
+            let cropperContainer = document.querySelector('#croppedImg' + index).parentNode;
+            cropperContainer.style.display = 'block';
+
+            // Update the cropped image when the "Save" button is clicked
+            let saveButton = document.querySelector('#saveButton' + index);
+            saveButton.addEventListener('click', async function() {
+                let croppedCanvas = cropper.getCroppedCanvas({
+                    width: 1500, 
+                    height: 1500 
+                });
+                let croppedImage = document.getElementById("croppedImg" + index);
+                croppedImage.src = croppedCanvas.toDataURL('image/jpeg', 1.0);
+
+                // Generate a unique name for the cropped image file based on the current timestamp
+                let timestamp = new Date().getTime();
+                let fileName = `cropped-img-${timestamp}-${index}.png`;
+
+                // Convert cropped canvas to Blob
+                await croppedCanvas.toBlob(blob => {
+                    // Create a File object from the Blob
+                    let imgFile = new File([blob], fileName, blob);
+                    // Set the File object as the value of the input field
+                    let input = document.getElementById('input' + index);
+                    input.files = [imgFile];
+                });
+            });
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+
+    // Function to delete the image
+    function deleteImage(index) {
+        // Remove the image source
+        document.getElementById('imgView' + index).src = '';
+        // Hide the image cropper container
+        document.querySelector('#croppedImg' + index).parentNode.style.display = 'none';
+    }
+</script>
+
+
+<!--<script>
     function viewImage1(event) {
 document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0])
 }
@@ -382,7 +456,7 @@ document.getElementById('imgView3').src = URL.createObjectURL(event.target.files
     
         reader.readAsDataURL(input.files[0]);
       }
-    </script>
+    </script>-->
 
 </body>
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/page-form-product-2.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:33:32 GMT -->

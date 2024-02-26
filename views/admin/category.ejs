@@ -84,8 +84,10 @@
                                             </th>
                                             <th>Name</th>
                                             <th>Description</th>
+                                            <th>offer%</th>
+                                            <th>Action</th>
                                             <th>Status</th>
-                                            <th class="text-end">Action</th>
+                                            <th class="text-end">Options</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -95,6 +97,13 @@
                                             </td>
                                             <td  class="tooltip-ellipsis" title="<%=category.name %>"><b><%=category.name %></b></td>
                                             <td title="<%=category.description %>" class="tooltip-ellipsis"><%=category.description %></td>
+                                            <td id="offer-<%= category._id %>"><%= category.categoryOffer %></td>
+
+                                            <%if(category.categoryOffer==0){%>
+                                                <td><button class="btn-primary rounded-pill" onclick="addOffer('<%= category._id %>')" >Add offer</button></td>
+                                                <% } else { %> 
+                                                    <td><button class="btn-danger rounded-pill" onclick="removeOffer('<%= category._id %>')" >remove offer</button></td>
+                                                    <% } %>
                                             <td> <%if(category.isListed==true){%>
                                                 <div class="col-lg-2 col-sm-2 col-4 col-status">
                                                     <span class="badge rounded-pill alert-success">Active</span>
@@ -149,7 +158,84 @@
     <script src="../admin-assets/js/vendors/jquery.fullscreen.min.js"></script>
     <!-- Main Script -->
     <script src="../admin-assets/js/main.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
+
+<script>
+    function addOffer(catId){
+        console.log("add offer clicked");
+            Swal.fire({
+                title: 'Enter offer percentage',
+                input: 'number',
+                inputAttributes: {
+                    autocapitalize: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                showLoaderOnConfirm: true,
+                preConfirm: (value) => {
+                    if (!value || isNaN(value)) {
+                        Swal.showValidationMessage('Please enter a valid number');
+                    } else {
+                        // Perform AJAX call to update offer percentage
+                        $.ajax({
+                            url: '/admin/updateCategoryOffer', // Replace with your server endpoint to update offer percentage
+                            method: 'POST',
+                            data: {
+                                catId: catId,
+                                categoryOffer: value // Changed to productOffer
+                            },
+                            
+                            success: function(response) {
+                                // Update offer percentage in the table
+                                $('#offer-' + catId).text(value);
+                                Swal.fire({
+                                    title: `Offer percentage updated to: ${value}%`,
+                                    icon: 'success'
+                                });
+                                location.reload()
+                            },
+                            error: function(xhr, status, error) {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Failed to update offer percentage',
+                                    icon: 'error'
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function removeOffer(catId){
+            $.ajax({
+                url:'/admin/removeCategoryOffer',
+                method:'POST',
+                data:{
+                    catId:catId
+                },
+                    success: function(response) {
+                                // Update offer percentage in the table
+                               
+                                Swal.fire({
+                                    title: "Offer removed successfully",
+                                    icon: 'success'
+                                });
+                                location.reload()
+
+                            },
+                            error: function(xhr, status, error) {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Failed to remove offer percentage',
+                                    icon: 'error'
+                                });
+                            }
+            })
+        }
+</script>
 
 
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/page-categories.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:33:21 GMT -->

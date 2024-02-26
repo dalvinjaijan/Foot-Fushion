@@ -11,6 +11,15 @@ name:{
     isListed:{
         type:Boolean,
         default:true
+    },
+    catOfferPrice:{
+        type:Number,
+        default:0
+      
+    },
+    categoryOffer:{
+        type:Number,
+        default:0
     }
     
 })

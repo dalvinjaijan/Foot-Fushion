@@ -31,6 +31,22 @@ const productSchema = new mongoose.Schema({
       },
       stock:{
         type:Number
+      },
+      productOffer:{
+        type:Number,
+        default:0
+      },
+      offerPrice:{
+        type:Number,
+        default:0
+      },
+      catOfferPrice:{
+        type:Number,
+        default:0
+      },
+      categoryOffer:{
+        type:Number,
+        default:0
       }
     });
     

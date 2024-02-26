@@ -7,6 +7,7 @@ const profileController=require('../controller/profileController')
 const cartController=require('../controller/cartController')
 const orderController=require('../controller/orderController')
 const couponController=require('../controller/couponController')
+const wishlistController=require('../controller/wishlistController')
 const validate=require('../middleware/authMiddleware')
 userRoute.use(express.json())
 userRoute.use(express.urlencoded({extended:true}))
@@ -89,6 +90,10 @@ userRoute.get('/couponVerify/:id',validate.requireAuth,orderController.verifyCou
 
 userRoute.post('/verifyPayment',orderController.verifyPayment)  
 userRoute.post('/paymentFailed',orderController.paymentFailed)  
+//wishList
+userRoute.post('/add-to-wishlist',wishlistController.addWishList)
+userRoute.get('/wishlist',validate.requireAuth,wishlistController.getWishList)
+userRoute.delete('/remove-product-wishlist',wishlistController.removeProductWishlist)
 
 
 

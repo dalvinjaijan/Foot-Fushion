@@ -15,7 +15,7 @@
     <!-- meta character set -->
     <meta charset="UTF-8">
     <!-- Site Title -->
-    <title>Stride Sport</title>
+    <title>Foot Fushion</title>
 
     <!--
             CSS
@@ -36,7 +36,60 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.js"></script>
     
     <style>
-
+.form-popup {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: #f8f8f8;
+          border-radius: 0px;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+          z-index: 10000;
+          padding: 40px;
+          color: #000000;
+          overflow-y: auto;
+          max-height: 80vh;
+      }
+  
+      .form-container {
+          height: 100%;
+      }
+  
+      .form-popup input[type="text"],
+      .form-popup input[type="number"],
+      .form-popup input[type="email"] {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 15px;
+          border-radius: 5px;
+          border: none;
+      }
+  
+      .form-popup .btn-group {
+          display: flex;
+          justify-content: flex-end;
+      }
+  
+      .form-popup .btn {
+          margin-left: 10px;
+      }
+  
+      .form-popup::-webkit-scrollbar {
+          width: 8px;
+      }
+  
+      .form-popup::-webkit-scrollbar-track {
+          background-color: #f1f1f1;
+      }
+  
+      .form-popup::-webkit-scrollbar-thumb {
+          background-color: #888;
+      }
+  
+      .form-popup::-webkit-scrollbar-thumb:hover {
+          background-color: #555;
+      }
     </style>
 
 
@@ -145,6 +198,7 @@
                    
                             <div class="coupon_area">
                                     <input type="text" placeholder="Enter coupon code" name="couponCode" id="couponCode" style="width:300px ;">
+                                    <a class="primary-btn" href="#" style="width: 100px; height: 40px; margin-top: 10px;" onclick="openEditPopup()" >Coupons</a>
                                     <a class="primary-btn" href="#" style="width: 100px; height: 40px; margin-top: 10px;" onclick="applyCoupon('<%=total.cartTotal%>')" >Apply</a>
                                     <a class="primary-btn" href="#" style="width: 100px; height: 40px; margin-top: -40px; margin-left: 190px;" onclick="clearCoupon()" >Clear</a>
                             </div>
@@ -327,6 +381,32 @@
           <input type="text" class="popup-form__input" placeholder="State" name="state" id="state">
           <button type="submit" id="btn" class="popup-form__submit">ADD</button>
       </form>
+  </div>
+</div>
+
+<div id="editPopup" class="form-popup">
+  <div class="form-container">
+    <span class="close" onclick="closeEditPopup()">&times;</span>
+    <form id="editForm" onsubmit="">
+      <% coupon.forEach(function(coupon) {%>
+
+      <label >coupon code:<%=coupon.couponCode %></label>
+      <label >Description:<%=coupon.description %></label>
+
+      
+      
+      
+      
+      <% }) %>
+      <div class="message-container">
+        <span id="editMessage" class="message"></span>
+      </div>
+      
+      <div class="btn-group">
+        
+        <button type="button" class="btn" onclick="closeEditPopup()">Close</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -520,11 +600,11 @@ function applyCoupon(total) {
               console.log(response,'---');
               if (response.status == true) {
                 document.getElementById('couponErr').style.color = '#19ff11'
-                document.getElementById('couponErr').innerText = "Coupon Applied SuccessFully"
+                document.getElementById('couponErr').innerText = `Coupon Applied SuccessFully,max discount ${response.maxDiscountValue}`
                 // document.getElementById('subTotal').innerText = total - response.discountAmount
                 document.getElementById('total').innerText = '₹' + Math.floor(total - response.discountAmount)
                 document.getElementById('totalVal').value = Math.floor(total - response.discountAmount)
-                document.getElementById('couponOffer').innerText = response.discount + '%'
+                document.getElementById('couponOffer').innerText = response.discount + '%' + `upto ${response.maxDiscountValue}`
                 document.getElementById('discountPercentage').value = response.discount
                 document.getElementById('discountAmount').value = Math.ceil(response.discountAmount)
 
@@ -551,6 +631,19 @@ function applyCoupon(total) {
 
 
 
+</script>
+<script>
+    function openEditPopup() {
+      console.log("clicked")
+    var popup = document.getElementById("editPopup");
+    popup.style.display = "block";
+  }
+  
+  // Close the edit popup
+  function closeEditPopup() {
+    var popup = document.getElementById("editPopup");
+    popup.style.display = "none";
+  }
 </script>
 <script>
     // Get references to the elements

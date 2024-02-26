@@ -57,6 +57,7 @@
                                 <th scope="col">Quantity</th>
                                 <th scope="col">Total</th>
                                 <th scope="col">Remove</th>
+                               
 
                             </tr>
                         </thead>
@@ -74,10 +75,23 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td >
+                                <td>
+                                  <% if(cart.carted.categoryOffer >= cart.carted.productOffer && cart.carted.categoryOffer!=0){ %>
                                     <h5><i class="fa fa-inr" aria-hidden="true"></i>
-                                        <%=cart.carted.price%></h5>
+                                      <%=cart.carted.catOfferPrice%></h5>
+                                <% } else if(cart.carted.productOffer>0){ %> 
+                                
+                                  <h5><i class="fa fa-inr" aria-hidden="true"></i>
+                                    <%=cart.carted.offerPrice%></h5>
+                                <% } else { %>
+                                  <h5><i class="fa fa-inr" aria-hidden="true"></i>
+                                    <%=cart.carted.price%></h5>
+                                    <% } %>
                                 </td>
+                                
+
+                                    
+                                
                     
                                 <td class="" data-title="Stock">
                                     <div class="product_count">
@@ -93,7 +107,7 @@
                                     
                                 <td>
                                     <span id="subTotal-<%=cart.item%>" class="subTotalVal">₹<%= cart.total %></span> 
-
+                                   
                                 </td>
                                 <td class="action" style="padding-left: 40px; font-size: 20px;" data-title="Remove"><a href="#" class="text-muted" 
                                   onclick="deleteProduct('<%=cart._id%>','<%=cart.item%>','<%= cart.quantity %>')"><i class="fa fa-trash" aria-hidden="true"></i>
@@ -130,7 +144,7 @@
                                     <h5>Sub Total</h5>
                                 </td>
                                 <td>
-                                    <h5 id="total">₹<%=cartTotal%></h5>
+                                    <h5 id="total">₹<%= cartTotal %></h5>
                                 </td>
                                 
                             </tr>
@@ -285,6 +299,21 @@
     })
 
   }
+
+  const cartBadge = document.getElementById('cart-badge')
+
+  console.log(cartBadge.textContent,"ghjgj");
+
+const cartItemCount = <%= cart.length %>
+console.log(cartItemCount)
+cartBadge.textContent = cartItemCount;
+
+// Hide the cart badge if there are no items in the cart
+if (cartItemCount === 0) {
+    cartBadge.style.display = 'none';
+} else {
+    cartBadge.style.display = 'block'; // Show the badge if there are items
+}
     </script>
  
     <script src="../user-assets/js/vendor/jquery-2.2.4.min.js"></script>
