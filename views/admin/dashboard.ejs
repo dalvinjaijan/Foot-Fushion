@@ -38,9 +38,10 @@
                 <div class="col-lg-3">
                     <div class="card card-body mb-4">
                         <article class="icontext">
-                  ==          <span class="icon icon-sm rounded-circle bg-primary-light"><i class="text-primary material-icons md-monetization_on"></i></span>
+                            <span class="icon icon-sm rounded-circle bg-primary-light"><i class="text-primary material-icons md-monetization_on"></i></span>
                             <div class="text">
                                 <h6 class="mb-1 card-title">Revenue</h6>
+                                <span>₹<%=orders[0].totalPriceSum%></span>
                                 <span class="text-sm">
                                 </span>
                             </div>
@@ -52,7 +53,7 @@
                         <article class="icontext">
                             <span class="icon icon-sm rounded-circle bg-success-light"><i class="text-success material-icons md-local_shipping"></i></span>
                             <div class="text">
-                                <h6 class="mb-1 card-title">Orders</h6> 
+                                <h6 class="mb-1 card-title">Orders</h6> <span><%=orders[0].count%></span>
                                 <span class="text-sm">
                                 </span>
                             </div>
@@ -65,7 +66,9 @@
                         <article class="icontext">
                             <span class="icon icon-sm rounded-circle bg-warning-light"><i class="text-warning material-icons md-qr_code"></i></span>
                             <div class="text">
+                                <h6 class="mb-1 card-title">Products</h6> <span><%=productsCount%></span>
                                 <span class="text-sm">
+                                    in <%=categoryCount%> categories
                                 </span>
                             </div>
                         </article>
@@ -76,8 +79,10 @@
                         <article class="icontext">
                             <span class="icon icon-sm rounded-circle bg-info-light"><i class="text-info material-icons md-shopping_basket"></i></span>
                             <div class="text">
-                                <h6 class="mb-1 card-title">Online Earning</h6> 
-                                    
+                                <h6 class="mb-1 card-title">Online Earning</h6> <span>₹<%=onlinePay[0].totalPriceSum%></span>
+                                <span class="text-sm">
+                                    from <%=onlinePay[0].count%> orders
+                                </span>
                             </div>
                         </article>
                     </div>
@@ -147,8 +152,40 @@
                                         <th scope="col">Date</th>
                                     </tr>
                                 </thead>
-                               
-                                    
+                                <% order.forEach(function(order,index) {%>
+                                    <tr>
+                                        <td><%=order.orders._id%></td>
+                                        <td><b><%=order.orders.name%></b></td>
+                                        <td>₹<%=order.orders.totalPrice%></td>
+                                        <!-- <td><span class="badge rounded-pill alert-success" id="status-val-<%= order.orders._id %>"><%=order.orders.orderStatus%></span></td> -->
+    
+    
+    
+    
+                                        <td>
+                                            <% if (order.orders.orderStatus == 'Placed') { %>
+                                                <div class="badge rounded-pill alert-primary"><%= order.orders.orderStatus %></div>
+                                            <% } else if (order.orders.orderStatus == 'Dispatched') { %>
+                                                <div class="badge rounded-pill alert-info"><%= order.orders.orderStatus %></div>
+                                            <% } else if (order.orders.orderStatus == 'Cancel Requested' ) { %>
+                                                <div class="badge rounded-pill alert-warning"><%= order.orders.orderStatus %></div>
+                                            <% } else if (order.orders.orderStatus == 'Delivered') { %>
+                                                <div class="badge rounded-pill alert-success"><%= order.orders.orderStatus %></div>
+                                            <% } else if (order.orders.orderStatus == 'Return Requested' ) { %>
+                                                <div class="badge rounded-pill alert-warning"><%= order.orders.orderStatus %></div>
+                                            <% } else { %>
+                                                <div class="badge rounded-pill alert-danger"><%= order.orders.orderStatus %></div>
+                                            <% } %>
+                                        </td>
+    
+    
+    
+    
+    
+                                        <td><%=order.orders.createdAt.toLocaleString()%></td>
+                                
+                                    </tr>
+                                    <% }) %>
     
                                    
                                    
@@ -185,9 +222,10 @@
 
     <script>
         // Sample data (replace this with your actual data)
-// // Extracting labels and data for the chart
-// const labels = datas.map(item => item.categoryName);
-// const prices = datas.map(item => item.PriceSum);
+const datas = JSON.parse('<%- JSON.stringify(categorySales) %>');
+// Extracting labels and data for the chart
+const labels = datas.map(item => item.categoryName);
+const prices = datas.map(item => item.PriceSum);
 
 // Generate a random color for each slice of the pie chart
 const getRandomColor = () => '#' + Math.floor(Math.random()*16777215).toString(16);
@@ -216,10 +254,11 @@ const myPieChart = new Chart(contexts, {
     </script>
 
     <script>
+        const salesData = JSON.parse('<%- JSON.stringify(salesData) %>');
         console.log("salesdata");
     
-        // const dates = salesData.map(item => item._id);
-        // const dailySales = salesData.map(item => item.dailySales);
+        const dates = salesData.map(item => item._id);
+        const dailySales = salesData.map(item => item.dailySales);
     
         const ctx = document.getElementById('salesChart').getContext('2d');
         new Chart(ctx, {
@@ -246,9 +285,10 @@ const myPieChart = new Chart(contexts, {
     </script>
 
     <script>
+         const salesCount = JSON.parse('<%- JSON.stringify(salesCount) %>');
 
-// const date = salesCount.map(item => item._id);
-// const orderCounts = salesCount.map(item => item.orderCount);
+const date = salesCount.map(item => item._id);
+const orderCounts = salesCount.map(item => item.orderCount);
 
 const ctxs = document.getElementById('salesCount').getContext('2d');
 new Chart(ctxs, {
@@ -280,7 +320,10 @@ new Chart(ctxs, {
 
 
 // Sample data for three values
-
+const onlinePay = JSON.parse('<%- JSON.stringify(onlinePay) %>');
+const codPay = JSON.parse('<%- JSON.stringify(codPay) %>');
+const walletPay = JSON.parse('<%- JSON.stringify(walletPay) %>'); 
+// const RazorpayandWallet = JSON.parse('<%- JSON.stringify(RazorpayandWallet)%>')
 const data = {
   labels: ['COD', 'Wallet', 'RAZORPAY'],
   datasets: [{

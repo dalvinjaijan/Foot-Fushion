@@ -114,9 +114,20 @@
                                                     <div class="info"> <%=product.productName%> </div>
                                                 </a>
                                             </td>
-                                            <td> ₹<%=product.productPrice%></td>
+						            		<% if(product.catOfferPrice<=product.productOfferPrice && product.catOfferPrice!=0 || product.productOfferPrice==0 && product.catOfferPrice>0){ %>
+                                                <td> ₹<%=product.catOfferPrice%></td>
+                                                <td> <%=product.quantity%></td> 
+                                            <td class="text-end"> ₹<%= product.catOfferPrice*product.quantity %> </td>
+                                            <% } else if(product.productOfferPrice>0){ %>
+                                                <td> ₹<%=product.productOfferPrice%></td>
                                             <td> <%=product.quantity%></td> 
-                                            <td class="text-end"> ₹<%= product.productPrice*product.quantity %> </td>
+                                            <td class="text-end"> ₹<%= product.productOfferPrice*product.quantity %> </td>
+                                             <% }else{ %>  
+                                                <td> ₹<%=product.productPrice%></td>
+                                                <td> <%=product.quantity%></td> 
+                                                <td class="text-end"> ₹<%= product.productPrice*product.quantity %> </td>
+                                             <% } %>   
+                                            
                                         </tr>
                                         <% }) %>
 

@@ -71,7 +71,8 @@ const generatorCouponCode =  () => {
                     status:true,
                     discountAmount:discountAmount,
                     discount:couponExist.minDiscountPercentage,
-                    couponCode:couponCode
+                    couponCode:couponCode,
+                    maxDiscountValue:couponExist.maxDiscountValue
                   })
                 }else{
                   resolve({
@@ -125,7 +126,7 @@ const generatorCouponCode =  () => {
             }else{
               resolve({
                 status: true,
-                message: "Coupon added successfully",
+                message: `Coupon added successfully, max discount ${couponExist.maxDiscountValue}`,
               });
             }
           }else{

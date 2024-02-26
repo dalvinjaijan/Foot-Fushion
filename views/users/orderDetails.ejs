@@ -15,7 +15,7 @@
 	<!-- meta character set -->
 	<meta charset="UTF-8">
 	<!-- Site Title -->
-	<title>Stride Spot</title>
+	<title>Foot Fushion</title>
 
 	<!--
 		CSS
@@ -105,15 +105,39 @@
 								<td>
 									<p><%=product.productName%></p>
 								</td>
-								<td>
-									<p>₹<%=product.productPrice%></p>
-								</td>
-								<td>
-									<h5>x<%=product.quantity%></h5>
-								</td>
-								<td>
-									<p>₹<%=product.productPrice*product.quantity%></p>
-								</td>
+								<% if(product.catOfferPrice<=product.productOfferPrice && product.catOfferPrice!=0 || product.productOfferPrice==0 && product.catOfferPrice>0){ %>
+									<td>
+										<p>₹<%=product.catOfferPrice%></p>
+									</td>
+									<td>
+										<h5>x<%=product.quantity%></h5>
+									</td>
+									<td>
+										<p>₹<%=product.catOfferPrice*product.quantity%></p>
+									</td>
+								<% } else if(product.productOfferPrice>0){ %>
+									<td>
+										<p>₹<%=product.productOfferPrice%></p>
+									</td>
+									<td>
+										<h5>x<%=product.quantity%></h5>
+									</td>
+									<td>
+										<p>₹<%=product.productOfferPrice*product.quantity%></p>
+									</td>
+									<% } else{ %>
+										<td>
+											<p>₹<%=product.productPrice%></p>
+										</td>
+										<td>
+											<h5>x<%=product.quantity%></h5>
+										</td>
+										<td>
+											<p>₹<%=product.productPrice*product.quantity%></p>
+										</td>
+									   <% } %>   
+								   
+								
 							</tr>
 							<% }) %>
 							<tr>
@@ -161,7 +185,7 @@
 									<p>₹ <%=orders[0].totalPrice%></p>
 								</td>
 								<td>
-								<%	if(orders[0].orderStatus == 'Delivered'|| orders[0].orderStatus=='Placed'){ %>
+								<%	if(orders[0].orderStatus == 'Delivered'){ %>
 									<a href="/invoice?id=<%=orders[0]._id%>" class="btn btn-primary">Download Invoice</a>
 									 <% }  %>
 								</td>

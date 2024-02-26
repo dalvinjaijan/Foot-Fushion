@@ -12,6 +12,13 @@ const storage = multer.diskStorage({
   });
 
   module.exports = {
-    upload: multer({ storage: storage }).array("file"),
-    update: multer({ storage: storage }).array("images"),
+    // upload: multer({ storage: storage }).array("file",3),
+    upload :multer({ storage: storage }).array("file[]"),
+    update: multer({ storage: storage }).fields([
+      { name: 'file1', maxCount: 1 }, 
+      { name: 'file2', maxCount: 1 },
+      { name: 'file3', maxCount: 1 }, 
+
+  ])
+  
   }

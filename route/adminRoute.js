@@ -45,6 +45,10 @@ adminRoute.use(session({
   adminRoute.post('/editCategory',validate.requireAuth,categoryController.updateCategory)
   adminRoute.get('/unListCategory',validate.requireAuth,categoryController.unListCategory)
   adminRoute.get('/reListCategory',validate.requireAuth,categoryController.reListCategory)
+  //category offer
+  adminRoute.post('/updateCategoryOffer',validate.requireAuth,categoryController.addCategoryOffer)
+  adminRoute.post('/removeCategoryOffer',validate.requireAuth,categoryController.removeCategoryOffer)
+
 
   //Product
 
@@ -54,7 +58,13 @@ adminRoute.use(session({
   adminRoute.get('/unListProduct',productController.unListProduct)
   adminRoute.get('/reListProduct',productController.reListProduct)
   adminRoute.get('/updateProduct',validate.requireAuth,productController.loadUpdateProduct)
-  adminRoute.post('/updateProduct',multer.upload,productController.updateProduct)
+  adminRoute.post('/updateProduct',multer.update,productController.updateProduct)
+  //productoffer
+  adminRoute.post('/updateProductOffer',validate.requireAuth,productController.addProductOffer)
+  adminRoute.post('/removeProductOffer',validate.requireAuth,productController.removeProductOffer)
+
+
+  
 
 
   //order
@@ -73,6 +83,11 @@ adminRoute.use(session({
   adminRoute.get('/couponList',validate.requireAuth,couponController.listCoupon)
   adminRoute.delete('/removeCoupon',validate.requireAuth,couponController.removeCoupon)
 
+  adminRoute.get('/salesReport',validate.requireAuth,adminController.getSalesReport)
+  adminRoute.post('/salesReport',validate.requireAuth,adminController.postSalesReport)
+
+
+ 
 
 
 

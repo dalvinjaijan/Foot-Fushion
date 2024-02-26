@@ -1,6 +1,7 @@
 const User = require('../model/userModel')
 const Address = require("../model/addressModel");
 const Cart = require('../model/cartModel');
+const Coupon = require('../model/couponModel')
 const orderHelper=require('../helpers/orderHelper')
 const couponHelper=require('../helpers/couponHelper')
 const Order=require('../model/orderModel');
@@ -10,6 +11,7 @@ const checkOut = async (req,res)=>{
         const user = res.locals.user
         const total = await Cart.findOne({ user: user.id });
         const address = await Address.findOne({user:user._id}).lean().exec()
+        const coupon= await Coupon.find({})
         const userData =  await user.wallet
         console.log(userData);
         
@@ -39,7 +41,7 @@ const checkOut = async (req,res)=>{
             }
           ]);
       if(address){
-        res.render('checkOut',{address:address.address,cart,total,userData}) 
+        res.render('checkOut',{address:address.address,cart,total,userData,coupon:coupon}) 
       }else{
         res.render('checkOut',{address:[],cart,total})
       }

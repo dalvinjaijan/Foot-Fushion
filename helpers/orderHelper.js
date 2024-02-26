@@ -104,6 +104,8 @@ const placeOrder = async (data, user) => {
                   productId: "$productDetails._id",
                   productName: "$productDetails.name",
                   productPrice: "$productDetails.price",
+                  productOfferPrice:"$productDetails.offerPrice",
+                  catOfferPrice:"$productDetails.catOfferPrice",
                   quantity: "$quantity",
                   category: "$productDetails.category",
                   image: "$productDetails.images",

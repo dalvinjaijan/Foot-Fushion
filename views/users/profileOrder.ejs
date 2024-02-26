@@ -95,7 +95,27 @@
                                             </div>
                                         </div>
                                           <% } else if (order.orders.orderStatus === 'Dispatched') { %>
-                                            <td><a href="#" onclick="cancelOrder('<%= order.orders._id %>', 'Cancel Requested'); return false;"><i class="fas fa-times"></i> Cancel</a></td>
+                                            <td><a href="#" onclick="canopenPopup('<%= order.orders._id %>', 'Cancel Requested'); return false;"><i class="fas fa-reply"></i> cancel</a></td>
+                                          <div id="custom-ce-popup" class="custom-popup" style="display: none;">
+                                            <span class="custom-close"
+                                                onclick="canclosePopup()">&times;</span>
+                                            <div>
+                                                <form action="" method="">
+                                                    <div
+                                                        style="display: flex; justify-content: center; flex-direction: column;">
+                                                        <input type="hidden"  name="orderId" value="<%= order.orders._id %>">
+                                                        <input type="hidden"  name="status" value="Cancel Requested">
+                                                        <textarea name="reason" required
+                                                            placeholder="Cancelling reason Reason"
+                                                            class="custom-textarea"
+                                                            id="reason"
+                                                            ></textarea>
+                                                        <button   type="submit" value="Returned" onclick="cancelOrder('<%= order.orders._id %>', 'Cancel Requested')"
+                                                            class="custom-btn btn-danger">Cancel</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
                                       <% } else if (order.orders.orderStatus === 'Delivered' && (currentDate - order.orders.createdAt) / (1000 * 3600 * 24) < 14) { %>
                                           <td><a href="#" onclick="canopenPopup('<%= order.orders._id %>', 'Return Requested'); return false;"><i class="fas fa-reply"></i> Return</a></td>
                                           <div id="custom-ce-popup" class="custom-popup" style="display: none;">

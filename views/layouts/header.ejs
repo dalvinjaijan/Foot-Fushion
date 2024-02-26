@@ -28,6 +28,22 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.js"></script>
+  <style>
+	#cart {
+    position: relative; /* Set the cart item container as relative */
+}
+
+#cart-badge {
+    position: absolute;
+    top: 25px; 
+    right: -8px; 
+    font-size: 0.8rem; 
+    padding: 0.2rem; 
+    border-radius: 50%;
+	line-height: 1; 
+}
+
+  </style>
   </head>
   <header class="header_area sticky-header">
 	<div class="main_menu">
@@ -44,9 +60,9 @@
 		  <!-- Collect the nav links, forms, and other content for toggling -->
 		  <div class="collapse navbar-collapse offset" id="navbarSupportedContent">
 			<ul class="nav navbar-nav menu_nav ml-auto">
-			  <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-			  <li class="nav-item">
-				<a class="nav-link" href="/shop">Shop</a></li>
+			  <li class="nav-item" id="home"><a class="nav-link" href="/" >Home</a></li>
+			  <li class="nav-item " id="shops" >
+				<a class="nav-link " href="/shop"   >Shop</a></li>
 				<ul class="dropdown-menu">
 				  <!-- <li class="nav-item"><a class="nav-link" href="/shop">Shop Products</a></li> -->
 				
@@ -55,9 +71,9 @@
 			  </li>
 			  
 							<% if (typeof user!=='undefined' && user!==null) { %>
-								<li class="nav-item submenu dropdown active">
+								<li class="nav-item submenu dropdown " id="userName">
 									<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-									 aria-expanded="false"><%=user.fname%></a>
+									 aria-expanded="false"  ><%=user.fname%></a>
 									<ul class="dropdown-menu">
 										<li class="nav-item active"><a class="nav-link" href="/profileDetails">Profile</a></li>
 										<li class="nav-item active"><a class="nav-link" href="/profileOrderList">My Orders</a></li>
@@ -76,8 +92,10 @@
 								<% } %>            
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
-			  <li class="nav-item"><a href="/cart" class="cart"><span class="ti-bag"></span></a></li>
-			  <li class="nav-item"><a href="/wishlist" class="cart"><span class="lnr lnr-heart"></span></a></li>
+
+			  <li class="nav-item" id="cart"><a href="/cart" class="cart"><span class="ti-bag"></span>
+				<span id="cart-badge" class="badge badge-danger"></span></a></li>
+			  <li class="nav-item" id="wishlist"><a href="/wishlist" class="cart"><span class="lnr lnr-heart"></span></a></li>
   
 			  <li class="nav-item">
 				<button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
@@ -98,4 +116,42 @@
 	  </div>
 	</div>
   </header>
+  <script>
+	window.onload=function(){
+		console.log(window.location.pathname)
+		
+		if(window.location.pathname == "/"){
+			
+			document.getElementById('shops').classList.remove('active')
+			document.getElementById('cart').classList.remove('active')
+			document.getElementById('wishlist').classList.remove('active')
+			
+			document.getElementById('home').classList.add('active')
+
+		}else if(window.location.pathname == "/shop"){
+			document.getElementById('home').classList.remove('active')
+			document.getElementById('cart').classList.remove('active')
+			document.getElementById('wishlist').classList.remove('active')
+			
+
+			document.getElementById('shops').classList.add('active')
+		}
+		else if(window.location.pathname == "/cart"){
+			document.getElementById('home').classList.remove('active')
+			document.getElementById('wishlist').classList.remove('active')
+			document.getElementById('shops').classList.remove('active')
+			document.getElementById('cart').classList.add('active')
+
+		}else if(window.location.pathname == "/wishlist"){
+			document.getElementById('home').classList.remove('active')
+			document.getElementById('cart').classList.remove('active')
+			document.getElementById('shops').classList.remove('active')
+			document.getElementById('wishlist').classList.add('active')
+
+		}
+	}
+
+	
+
+  </script>
   

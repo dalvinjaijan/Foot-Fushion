@@ -143,6 +143,19 @@
        
 
         // Function to scroll the slider
+		const cartBadge= document.getElementById('cart-badge')
+
+		const cartItemCount = <%= (cart.cartItems.length !== 0 ? cart.cartItems.length : 0) %>;
+
+		console.log(cartItemCount,"hkh")
+cartBadge.textContent = cartItemCount;
+
+
+if (cartItemCount === 0) {
+  cartBadge.style.display = 'none';
+} else {
+  cartBadge.style.display = 'block'; // Show the badge if there are items
+}
         
     </script>
 	<!-- End related-product Area -->

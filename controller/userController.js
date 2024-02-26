@@ -3,6 +3,7 @@ const otpHelper=require('../helpers/otpHelper')
 const userHelper=require('../helpers/userHelper')
 const Category=require('../model/categoryModel')
 const Product=require('../model/productModel')
+const Cart=require('../model/cartModel')
 
 const bcrypt= require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -29,9 +30,20 @@ const createToken = (id)=>{
 
 const loadHome = async(req,res)=>{
     try {
-       
-        
+      if(res.locals.user){
+        const userId=res.locals.user._id
+        const cart=await Cart.findOne({user:userId})
+        if(cart){
+          console.log("cart is there",cart)
+          res.render('index',{cart:cart})
+      }else{
         res.render('index')
+      }
+       
+        }else{
+          res.render('index',{cart:{cartItems:[]}})
+        }
+        
     } catch (error) {
 
         console.log(error.message); 
@@ -211,6 +223,8 @@ const error404 = async(req,res)=>{
 
   const displayProduct = async (req, res) => {
     try {
+      const userId=res.locals.user._id
+      
       const category = await Category.find({});
       const page = parseInt(req.query.page) || 1;
       const limit = 6;
@@ -251,13 +265,22 @@ const error404 = async(req,res)=>{
         .skip(skip)
         .limit(limit)
         .sort(sortOption)
-        .populate('category');
+        .populate('category')
+        console.log(userId);
+        const cart= await Cart.findOne({user:userId})
+       
 
     if(searchQuery!=''){
         res.render('categoryShop',{product: products,category, currentPage: page, totalPages })
 
     }else{
+      if(cart){
+        res.render('shop', { product: products, category, currentPage: page, totalPages,cart:cart });
+      }
+      else{
         res.render('shop', { product: products, category, currentPage: page, totalPages });
+      }
+        
 
     }
   
@@ -271,6 +294,7 @@ const error404 = async(req,res)=>{
 
  
 const logout=async(req,res)=>{
+  console.log("hi")
   res.cookie('jwt','',{maxAge:1})
   res.redirect('/')
 }

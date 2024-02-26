@@ -24,6 +24,7 @@
 
 <!-- Add Cropper.js -->
 <script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
+
 </head>
 
 <body>
@@ -82,7 +83,7 @@
         </header>
        
         <section class="content-main">
-        <form action="/admin/addProduct" method="post" enctype="multipart/form-data" id="myform">
+        <form action="/admin/addProduct" method="post" enctype="multipart/form-data" id="myForm">
         
             <div class="row">
                 <div class="col-6">
@@ -146,59 +147,24 @@
                             </div> <!-- row.// -->
                             
                             <hr class="mb-4 mt-0">
-                            <div class="col-lg-6">
-                                <div class="card mb-4">
-                                  <div class="card-header">
+                            <div class="card mb-4">
+                                <div class="card-header">
                                     <h4>Media</h4>
-                                  </div>
-                                  <div class="input-upload">
-                                    <img src="/imgs/theme/upload.svg" id="imgView1" alt="">
-                                    <input class="form-control" id="input1" name="file" onchange="viewImage1(event),viewImage(event, 1)" type="file">
-                                  </div>
-                                  <div class="image-cropper" style="display:none;">
-                                    <img src="" id="croppedImg1" alt="">
-                                    <button type="button" id="saveButton1" class="btn-sm btn-primary">Save</button>
-                                  </div>
-                      
-                                </div> <!-- card end// -->
-                              </div>
-                              <div class="col-lg-6">
-                                <div class="card mb-4">
-                                  <div class="card-header">
-                                    <h4>Media</h4>
-                                  </div>
-                                  <div class="input-upload">
-                                    <img src="/imgs/theme/upload.svg" id="imgView2" alt="">
-                                    <input class="form-control" id="input2" name="file" onchange="viewImage2(event),viewImage(event, 2)" type="file">
-                                  </div>
-                                  <div class="image-cropper" style="display:none;">
-                                    <img src="" id="croppedImg2" alt="">
-                                    <button type="button" id="saveButton2" class="btn-sm btn-primary">Save</button>
-                                  </div>
-                      
-                                </div> <!-- card end// -->
-                              </div>
-                              <div class="col-lg-6">
-                                <div class="card mb-4">
-                                  <div class="card-header">
-                                    <h4>Media</h4>
-                                  </div>
-                                  <div class="input-upload">
-                                    <img src="/imgs/theme/upload.svg" id="imgView3" alt="">
-                                    <input class="form-control" id="input3" name="file" onchange="viewImage3(event),viewImage(event, 3)" type="file">
-                                  </div>
-                                  <div class="image-cropper" style="display:none;">
-                                    <img src="" id="croppedImg3" alt="">
-                                    <button type="button" id="saveButton3" class="btn-sm btn-primary">Save</button>
-                                  </div>
-                      
                                 </div>
-                        
+                                <div class="input-upload">
+                                    <div id="imgView1_1">
+                                        <!-- Original images will be displayed here -->
+                                    </div>
+                                    <input class="form-control" id="input1" name="file[]" onchange="viewImage1(event),viewImage(event, 1)" type="file" multiple>
+                                </div>
+                                <div class="image-cropper" style="display:none;">
+                                    <!-- Cropped images will be displayed here -->
+                                    <div id="croppedImg1_1" class="cropdiv"></div>
+                                    <button type="button" id="saveButton1" class="btn-sm btn-primary">Save</button>
+                                </div>
+                            </div>
                            
-                            
-                            <!-- .row end// -->
-                        </div>
-                            </div> <!-- .row end// -->
+                            <!-- </div> .row end// -->
                         </div>
                     </div>
                 </div>
@@ -220,124 +186,175 @@
 
     <script>
 
-const myForm = document.getElementById("myForm")
+const myForm = document.getElementById("myForm");
 
+const name = document.getElementById("name");
+const description = document.getElementById("description");
+const price = document.getElementById("price");
+const stock = document.getElementById("stock");
 
-const name = document.getElementById("name")
-const description = document.getElementById("description")
-const price = document.getElementById("price")
-const stock = document.getElementById("stock")
+const nameError = document.getElementById("nameError");
+const descriptionError = document.getElementById("descriptionError");
+const priceError = document.getElementById("priceError");
+const stockError = document.getElementById("stockError");
 
-
-const nameError = document.getElementById("nameError")
-const descriptionError = document.getElementById("descriptionError")
-const priceError = document.getElementById("priceError")
-const stockError = document.getElementById("stockError")
-      function nameValidation(){
-const nameValue = name.value
-const regx = /^[a-zA-Z0-9\s]+$/
-    if(nameValue.trim()==0 || !regx.test(nameValue)){
-        nameError.innerHTML = 'Enter a valid product name'
-        nameError.style.color = 'red'
+function nameValidation() {
+    const nameValue = name.value.trim();
+    const regx = /^[a-zA-Z0-9\s]+$/;
+    if (nameValue === "" || !regx.test(nameValue)) {
+        nameError.innerHTML = 'Enter a valid product name';
+        nameError.style.color = 'red';
         name.style.border = "solid 2px red";
         return false;
     }
-nameError.innerHTML = ""
-    nameError.style.color = "green"
+    nameError.innerHTML = "";
+    nameError.style.color = "green";
     name.style.border = "solid 2px green";
-    return true
-
-
-
+    return true;
 }
 
-
-function descriptionValidation(){
-const descriptionValue = description.value
-    if(descriptionValue.trim()==0){
-        descriptionError.innerHTML = 'Descripion is required'
-        descriptionError.style.color = 'red'
+function descriptionValidation() {
+    const descriptionValue = description.value.trim();
+    if (descriptionValue === "") {
+        descriptionError.innerHTML = 'Description is required';
+        descriptionError.style.color = 'red';
         description.style.border = "solid 2px red";
         return false;
     }
-descriptionError.innerHTML = ""
-    descriptionError.style.color = "green"
+    descriptionError.innerHTML = "";
+    descriptionError.style.color = "green";
     description.style.border = "solid 2px green";
-    return true
-
-
-
+    return true;
 }
-          function priceValidation(){
-      const priceValue = price.value
-			if(priceValue.trim()==0){
-				priceError.innerHTML = 'Price is Required'
-				priceError.style.color = 'red'
-				price.style.border = "solid 2px red";
-				return false;
-			}
-      if(priceValue <= 0 ){
-				priceError.innerHTML = 'Price Must be greater than zero'
-				priceError.style.color = 'red'
-				price.style.border = "solid 2px red";
-				return false;
-			}
-      priceError.innerHTML = ""
-			priceError.style.color = "green"
-			price.style.border = "solid 2px green";
-			return true
-      }
-      function stockValidation(){
-      const stockValue = stock.value
-			if(stockValue.trim()==0){
-				stockError.innerHTML = 'Stock is Required'
-				stockError.style.color = 'red'
-				stock.style.border = "solid 2px red";
-				return false;
-			}
-      if(stockValue <  0 ){
-				stockError.innerHTML = 'Stock Must be greater than or equal to zero'
-				stockError.style.color = 'red'
-				stock.style.border = "solid 2px red";
-				return false;
-			}
-      stockError.innerHTML = ""
-			stockError.style.color = "green"
-			stock.style.border = "solid 2px green";
-			return true
-      }
-      name.addeventListner('blur',nameValidation)
-      description.addeventListner('blur',descriptionValidation)
 
-      myform.addEventListener("submit",(event)=>{
-			event.preventDefault();
-      nameValidation()
-      descriptionValidation()
-			if(!priceValidation() || !stockValidation() || !nameValidation()  || !descriptionValidation()) {
-				return false
-			}else{
-				myform.submit();
-			}
+function priceValidation() {
+    const priceValue = price.value.trim();
+    if (priceValue === "") {
+        priceError.innerHTML = 'Price is Required';
+        priceError.style.color = 'red';
+        price.style.border = "solid 2px red";
+        return false;
+    }
+    if (parseFloat(priceValue) <= 0) {
+        priceError.innerHTML = 'Price Must be greater than zero';
+        priceError.style.color = 'red';
+        price.style.border = "solid 2px red";
+        return false;
+    }
+    priceError.innerHTML = "";
+    priceError.style.color = "green";
+    price.style.border = "solid 2px green";
+    return true;
+}
 
-		})
+function stockValidation() {
+    const stockValue = stock.value.trim();
+    if (stockValue === "") {
+        stockError.innerHTML = 'Stock is Required';
+        stockError.style.color = 'red';
+        stock.style.border = "solid 2px red";
+        return false;
+    }
+    if (parseInt(stockValue) <= 0) {
+        stockError.innerHTML = 'Stock Must be greater than zero';
+        stockError.style.color = 'red';
+        stock.style.border = "solid 2px red";
+        return false;
+    }
+    stockError.innerHTML = "";
+    stockError.style.color = "green";
+    stock.style.border = "solid 2px green";
+    return true;
+}
+
+name.addEventListener('blur', nameValidation);
+description.addEventListener('blur', descriptionValidation);
+
+myForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    nameValidation();
+    descriptionValidation();
+    const fileInput = document.getElementById('input1');
+    if (!priceValidation() || !stockValidation() || !nameValidation() || !descriptionValidation() || !validateImageFile(fileInput)) {
+        return false;
+    } else {
+        myForm.submit();
+    }
+});
+
 
     </script>
 
 <script>
     function viewImage1(event) {
-document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0])
+       
+// document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0])
+// }
+
+// function viewImage2(event) {
+// document.getElementById('imgView2').src = URL.createObjectURL(event.target.files[0])
+// }
+
+// function viewImage3(event) {
+// document.getElementById('imgView3').src = URL.createObjectURL(event.target.files[0])
+// }function viewImage1(event) {
+    const input = event.target;
+    const index = input.id.split('input')[1]; // Extract the index from the input ID
+    const imagesContainer = document.getElementById('imgView1_' + index);
+    
+
+    // Clear any existing images in the container
+    imagesContainer.innerHTML = '';
+
+    // Loop through each selected file and create an image element for it
+    for (const file of input.files) {
+        const image = document.createElement('img');
+        image.src = URL.createObjectURL(file);
+        imagesContainer.appendChild(image);
+    }
 }
 
-function viewImage2(event) {
-document.getElementById('imgView2').src = URL.createObjectURL(event.target.files[0])
+const allowedExtensions = ['png', 'jpg', 'jpeg', 'svg']; // List of allowed file extensions
+
+function validateImageFile(fileInput) {
+    const fileName = fileInput.value.split('\\').pop(); // Get the file name from the input
+    const fileExtension = fileName.split('.').pop().toLowerCase(); // Get the file extension
+
+    if (!allowedExtensions.includes(fileExtension)) {
+        // If the file extension is not in the allowedExtensions array
+        alert('Only image files (PNG, JPG, JPEG, SVG) are allowed.');
+        fileInput.value = ''; // Clear the file input
+        return false;
+    }
+
+    return true; // Return true if the file extension is allowed
 }
 
-function viewImage3(event) {
-document.getElementById('imgView3').src = URL.createObjectURL(event.target.files[0])
-}
+// // Add an event listener to each file input element
+document.getElementById('input1').addEventListener('change', function(event) {
+    if (!validateImageFile(this)) {
+        // If the file extension is not allowed, prevent further actions
+        event.preventDefault();
+    }
+});
+
+// document.getElementById('input2').addEventListener('change', function(event) {
+//     if (!validateImageFile(this)) {
+//         // If the file extension is not allowed, prevent further actions
+//         event.preventDefault();
+//     }
+// });
+
+// document.getElementById('input3').addEventListener('change', function(event) {
+//     if (!validateImageFile(this)) {
+//         // If the file extension is not allowed, prevent further actions
+//         event.preventDefault();
+//     }
+// });
+
 </script>
 
-<script>
+<!-- <script>
     function viewImage(event, index) {
         let input = event.target;
         let reader = new FileReader();
@@ -389,7 +406,58 @@ document.getElementById('imgView3').src = URL.createObjectURL(event.target.files
     
         reader.readAsDataURL(input.files[0]);
       }
+    </script> -->
+    <script>
+       function viewImage(event, index) {
+    const input = event.target;
+    const imagesContainer = document.getElementById(`imgView1_${index}`); // Dynamic ID
+
+    while (imagesContainer.firstChild) {
+        imagesContainer.removeChild(imagesContainer.firstChild);
+    }
+
+    for (const file of input.files) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const image = document.createElement('img');
+            image.src = reader.result;
+            imagesContainer.appendChild(image);
+
+            // Initialize Cropper.js on the image
+            const cropper = new Cropper(image, {
+                aspectRatio: 1 / 1,
+                viewMode: 1,
+                guides: true,
+                background: false,
+                autoCropArea: 1,
+                zoomable: true
+            });
+
+            // Show the image cropper container
+            const cropperContainer = document.querySelector(`#croppedImg1_${index}`).parentNode; // Dynamic ID
+            cropperContainer.style.display = 'block';
+
+            // Update the cropped image when the "Save" button is clicked
+            const saveButton = document.querySelector(`#saveButton1_${index}`);
+            saveButton.addEventListener('click', async function() {
+                const croppedCanvas = cropper.getCroppedCanvas({
+                    width: 1500,
+                    height: 1500
+                });
+                const croppedImage = document.createElement('img');
+                croppedImage.src = croppedCanvas.toDataURL('image/jpeg', 1.0);
+                imagesContainer.appendChild(croppedImage);
+
+                // Hide the image cropper container
+                cropperContainer.style.display = 'none';
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
     </script>
+    
 
 </body>
 

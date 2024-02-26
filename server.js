@@ -9,6 +9,7 @@ const adminRoute=require('./route/adminRoute')
 const dbConnection=require("./config/config")
 
 dbConnection.connection()
+app.set('view engine','ejs')
 
 
 app.use(express.urlencoded({extended:true}))
@@ -16,9 +17,12 @@ app.use(nocache())
 
 app.use(express.static(__dirname+'/public'));
 
-
-
-
+app.use((err, req, res, next) => {
+    console.error(err.stack)
+    res.status(500).send('Internal Server Error')
+    
+    
+  });
 
 
 
@@ -27,6 +31,18 @@ app.use("/",userRoute)
 
 //adminRoute
 app.use("/admin",adminRoute)
+
+app.use((err, req, res, next) => {
+    console.error(err.stack)
+    res.status(500).send('Internal Server Error')
+    
+    
+  });
+
+app.use('*',(req,res,next)=>{
+    res.render('users/errorPages/error-404')
+    
+})
 
 
 
