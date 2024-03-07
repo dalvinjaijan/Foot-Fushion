@@ -56,7 +56,7 @@ userRoute.post('/editPassword',validate.requireAuth,profileController.updatePass
 userRoute.get('/profileAddress',validate.requireAuth,profileController.profileAddress)
 userRoute.post('/submitAddress',validate.requireAuth,profileController.submitAddress)
 userRoute.post('/updateAddress',validate.requireAuth,profileController.submitAddress)
-//  userRoute.get('/deleteAddress',validate.requireAuth,profileController.deleteAddress)
+ userRoute.get('/deleteAddress',validate.requireAuth,profileController.deleteAddress)
 
 
 
@@ -81,6 +81,10 @@ userRoute.get('/wallet',profileController.walletTransaction)
 userRoute.get('/walletStatus/:id',validate.requireAuth,orderController.walletStatus)
 
 userRoute.get('/profileorderList',validate.requireAuth,orderController.orderList)
+userRoute.get('/retryPayment',validate.requireAuth,orderController.loadRetryPayment)
+userRoute.post('/retryPayment',validate.requireAuth,orderController.postRetryPayment)
+userRoute.delete('/cancelPayment',validate.requireAuth,orderController.cancelPayment)
+
 userRoute.get('/orderDetails',validate.requireAuth,orderController.orderDetails)
 userRoute.post('/cancelOrder',orderController.cancelOrder)
 //coupon
@@ -91,9 +95,12 @@ userRoute.get('/couponVerify/:id',validate.requireAuth,orderController.verifyCou
 userRoute.post('/verifyPayment',orderController.verifyPayment)  
 userRoute.post('/paymentFailed',orderController.paymentFailed)  
 //wishList
-userRoute.post('/add-to-wishlist',wishlistController.addWishList)
+userRoute.post('/add-to-wishlist',validate.requireAuth,wishlistController.addWishList)
 userRoute.get('/wishlist',validate.requireAuth,wishlistController.getWishList)
 userRoute.delete('/remove-product-wishlist',wishlistController.removeProductWishlist)
+
+//download invoice
+userRoute.get('/invoice',validate.requireAuth,orderController.downloadInvoice)
 
 
 

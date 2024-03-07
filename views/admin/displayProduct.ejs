@@ -255,13 +255,15 @@
                 title: 'Enter offer percentage',
                 input: 'number',
                 inputAttributes: {
-                    autocapitalize: 'off'
+                    autocapitalize: 'off',
+                    min: 1,
+                     max: 95,
                 },
                 showCancelButton: true,
                 confirmButtonText: 'Submit',
                 showLoaderOnConfirm: true,
                 preConfirm: (value) => {
-                    if (!value || isNaN(value)) {
+                    if (!value || isNaN(value)|| value < 1 || value > 95) {
                         Swal.showValidationMessage('Please enter a valid number');
                     } else {
                         // Perform AJAX call to update offer percentage

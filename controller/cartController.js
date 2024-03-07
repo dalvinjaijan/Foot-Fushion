@@ -3,11 +3,17 @@ const Cart = require('../model/cartModel')
 
 const addToCart = (req, res) => {
   try {
-    cartHelper.addCart(req.params.id, res.locals.user._id)
+    if(res.locals.user){
+      cartHelper.addCart(req.params.id, res.locals.user._id)
       .then((response) => {
         console.log(response,"res")
         res.send(response)
       })
+    }else{
+      console.log("user is not logged in");
+      res.redirect('/login')
+    }
+    
   } catch (error) {
     console.log(error.message);
 
@@ -26,7 +32,7 @@ const loadCart = async (req, res) => {
     if (total) {
       // console.log(total.cartItems[0].quantity);
       const numberOfProducts=total.cartItems.length
-      console.log('num',numberOfProducts)
+      
       for (let i = 0; i < numberOfProducts; i++) {
         let updateQuery = {};
         let totalPrice;

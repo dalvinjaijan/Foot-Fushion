@@ -37,7 +37,7 @@ const loadHome = async(req,res)=>{
           console.log("cart is there",cart)
           res.render('index',{cart:cart})
       }else{
-        res.render('index')
+        res.render('index',{cart:{cartItems:[]}})
       }
        
         }else{
@@ -223,7 +223,6 @@ const error404 = async(req,res)=>{
 
   const displayProduct = async (req, res) => {
     try {
-      const userId=res.locals.user._id
       
       const category = await Category.find({});
       const page = parseInt(req.query.page) || 1;
@@ -266,20 +265,27 @@ const error404 = async(req,res)=>{
         .limit(limit)
         .sort(sortOption)
         .populate('category')
-        console.log(userId);
-        const cart= await Cart.findOne({user:userId})
+        
+        
        
 
     if(searchQuery!=''){
         res.render('categoryShop',{product: products,category, currentPage: page, totalPages })
 
     }else{
+      if(res.locals.user){
+        const userId=res.locals.user._id
+        const cart= await Cart.findOne({user:userId})
+      
       if(cart){
         res.render('shop', { product: products, category, currentPage: page, totalPages,cart:cart });
       }
       else{
-        res.render('shop', { product: products, category, currentPage: page, totalPages });
+        res.render('shop', { product: products, category, currentPage: page, totalPages ,cart:{cartItems:[]}});
       }
+    } else{
+      res.render('shop', { product: products, category, currentPage: page, totalPages ,cart:{cartItems:[]}});
+    }
         
 
     }

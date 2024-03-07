@@ -62,7 +62,7 @@ const loadDashboard = async(req,res)=>{
       }
 
     ])
-    console.log(orders);
+    
 
 
     const categorySales = await Order.aggregate([
@@ -111,7 +111,7 @@ const loadDashboard = async(req,res)=>{
     ]);
 
 
-    const salesData = await Order.aggregate([ 
+    const dailySalesData = await Order.aggregate([ 
       { $unwind: "$orders" }, 
       {
         $match: {
@@ -135,6 +135,112 @@ const loadDashboard = async(req,res)=>{
         }
       }
     ])
+    function monthlyDates(){
+      const today=new Date()
+      const monthStart=new Date(today)
+      monthStart.setDate(1)
+      monthStart.setUTCHours(0)
+      monthStart.setUTCMinutes(0)
+      monthStart.setUTCSeconds(0)
+      console.log(monthStart,"monthStart");   
+      let monthlyDates=[]
+      for(let i=1;i<=12;i++){
+        const month=new Date(monthStart)
+        month.setMonth(month.getMonth()-(12-i))
+       const monthName = month.toLocaleString('default', { month: 'long' });
+        
+        monthlyDates.push({month:month,monthName:monthName})
+      }
+      return monthlyDates
+    }
+const monthlySalesData=async()=>{
+let monthDate=monthlyDates()
+console.log(monthDate,"monthDate");
+let salesData = [];
+
+  for (let i = 0; i < 12; i++) {
+   const saleMonth= await Order.aggregate([
+      { $unwind: '$orders' },
+      {
+        $match: {
+          
+          'orders.createdAt': {
+            $gte: monthDate[i].month,
+            $lte: monthDate[i + 1] ? monthDate[i + 1].month: new Date()
+          }
+        }
+      },
+      {$match:{'orders.orderStatus':'Delivered'}},
+      {
+        $group: {
+          _id: null, // or any other grouping criteria you need
+          monthlySalesData: { $sum: { $toInt: '$orders.totalPrice' } },
+         
+        }
+      }
+    ]);
+    console.log("salemonth",saleMonth);
+    salesData.push({saleMonth,monthName:monthDate[i].monthName});
+    }
+
+    return salesData;
+
+}
+const monthSalesData = await monthlySalesData();
+
+function yearlyDates(){
+  const today=new Date()
+  const yearStarting= new Date(today)
+  yearStarting.setMonth(0)
+  yearStarting.setDate(1)
+  yearStarting.setUTCHours(0)
+  yearStarting.setUTCMinutes(0)
+  yearStarting.setUTCSeconds(0)
+  console.log(yearStarting)
+  let yearlyDates=[]
+  for(let i=9;i>=0;i--){
+    const year=new Date(yearStarting)
+    year.setFullYear(year.getFullYear()-i)
+
+    yearlyDates.push({year:year})
+  }
+  return yearlyDates
+}
+
+const yearlySalesData=async()=>{
+  const yearDate=yearlyDates()
+ 
+ let yearDates=[]
+  for(let i=0;i<10;i++){
+    const saleYear=await Order.aggregate([
+      {$unwind:"$orders"},
+      {$match:{"orders.createdAt":
+    {
+      $gte:yearDate[i].year,
+      $lte:yearDate[i+1] ? yearDate[i+1].year : new Date()
+    }}},
+    {$match:{"orders.orderStatus":'Delivered'}}
+    ,{
+      $group:{
+        _id:null,
+       yearlySalesData: { $sum: { $toInt: '$orders.totalPrice' } },
+       
+      
+      }
+    }
+    ])
+    yearDates.push({saleYear,year:yearDate[i].year})
+  }
+  return yearDates
+  
+}
+const yearSalesData=await yearlySalesData()
+
+
+
+
+    
+     
 
     const salesCount = await Order.aggregate([
       { $unwind: "$orders" },
@@ -161,14 +267,77 @@ const loadDashboard = async(req,res)=>{
       }
     ])
 
-
+    const bestSellingProducts = await Order.aggregate([
+      {
+        $unwind: "$orders"
+      },
+      {
+        $match: {
+          "orders.orderStatus": "Delivered"
+        }
+      },
+      {
+        $unwind: "$orders.productDetails"
+      },
+      {
+        $group: {
+          _id: "$orders.productDetails.productName", 
+          totalQuantitySold: { $sum: "$orders.productDetails.quantity" } 
+        }
+      },
+      {
+        $sort: {
+          totalQuantitySold: -1
+        }
+      },
+      {
+        $limit: 10 
+      }
+    ]);
+    
+    
+    const bestSellingCategory=await Order.aggregate([
+      {$unwind:"$orders"},
+      {$match:{
+        "orders.orderStatus":'Delivered'
+      }},
+      {$unwind:"$orders.productDetails"},
+      {$group:{
+        _id:"$orders.productDetails.category",
+        totalQuantitySold:{$sum:"$orders.productDetails.quantity"}
+      }},
+      {$lookup:{
+        from:"categories",
+        localField:"_id",
+        foreignField: "_id",
+          as: "categoryDetails",
+      }},
+      {$unwind:"$categoryDetails"},
+      {
+        $project:{
+          categoryName: "$categoryDetails.name",
+          totalQuantitySold: 1,
+          _id: 0,
+        }
+      },
+      {
+        $sort: {
+          totalQuantitySold: -1
+        }
+      },
+      {
+        $limit: 10 
+      }
+    ])
+    console.log(bestSellingCategory);
+              
 
     const categoryCount  = await Category.find({}).count()
 
     const productsCount  = await Product.find({}).count()
 
     const onlinePay = await adminHelper.getOnlineCount()
-    console.log('onlinepay',onlinePay)
+    
     const walletPay = await adminHelper.getWalletCount()
     const codPay = await adminHelper.getCodCount()
     const RazorpayandWallet = await adminHelper.RazorpayandWalletCount() 
@@ -184,8 +353,9 @@ const loadDashboard = async(req,res)=>{
 
 
       res.render('dashboard',{orders,productsCount,categoryCount,
-        onlinePay,salesData,order:latestorders,salesCount,
-        walletPay,codPay,categorySales,RazorpayandWallet})
+        onlinePay,dailySalesData,order:latestorders,salesCount,
+        walletPay,codPay,categorySales,RazorpayandWallet,monthSalesData,yearSalesData,bestSellingProducts,
+        bestSellingCategory,bestSellingCategory})
   } catch (error) {
       console.log(error)
   }

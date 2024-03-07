@@ -90,6 +90,13 @@
       .form-popup::-webkit-scrollbar-thumb:hover {
           background-color: #555;
       }
+      
+    .alert-message {
+        color: red;
+        font-weight: bold;
+    }
+
+
     </style>
 
 
@@ -181,7 +188,7 @@
                             <ul class="list list_2">
 
                                 <li><a href="#">Subtotal <span id="subTotal">₹<%=total.cartTotal%></span></a></li>
-                                <li><a href="#">Discount  <span id="couponOffer"></span></a></li>
+                                <li><a href="#">Discount<span id="couponOffer"></span></a></li>
 
                                 <li><a href="#">Total ₹<span id="total"><%=total.cartTotal%></span></a></li>
                                 <input type="hidden" name="discountPercentage" id="discountPercentage" value="0">
@@ -226,15 +233,25 @@
                              <%}%>
                            
                             
-                              
+                             <% if (total.cartTotal > 1000) { %>
                             <div class="payment_item">
                                 <div class="radion_btn">
-                                    <input type="radio" id="f-option5" name="paymentOption" value="cod" checked>
+                                    <input type="radio" id="f-option5" name="paymentOption" value="cod" checked disabled>
+                                    <label for="f-option5">Cash On Delivery</label>
+                                    <div class="check"></div>
+                                </div>
+                                <p class="alert-message">COD is not applicable for order above 1000</p>
+                            </div>
+                            <% }else { %>
+                              <div class="payment_item">
+                                <div class="radion_btn">
+                                    <input type="radio" id="f-option5" name="paymentOption" value="cod" checked >
                                     <label for="f-option5">Cash On Delivery</label>
                                     <div class="check"></div>
                                 </div>
                                 <p>Pay the amount at your doorstep</p>
                             </div>
+                            <% } %>
                             <div class="payment_item">
                                 <div class="radion_btn">
                                 <input type="radio" id="f-option6" name="paymentOption" value="razorpay" checked>
@@ -388,16 +405,19 @@
   <div class="form-container">
     <span class="close" onclick="closeEditPopup()">&times;</span>
     <form id="editForm" onsubmit="">
-      <% coupon.forEach(function(coupon) {%>
+     
+      <% let validCoupons = coupon.filter(coupon => !userDetails.coupons.includes(coupon.couponCode) && coupon.validity >= Date.now()); %>
 
-      <label >coupon code:<%=coupon.couponCode %></label>
-      <label >Description:<%=coupon.description %></label>
+<% if (validCoupons.length === 0) { %>
+     <h4>No Coupons Available</h4>
+<% } else { %>
+    <% validCoupons.forEach(function(coupon) { %>
+        <label>Coupon code: <%= coupon.couponCode %></label>
+        <label>Description: <%= coupon.description %></label>
+    <% }) %>
+<% } %>
 
       
-      
-      
-      
-      <% }) %>
       <div class="message-container">
         <span id="editMessage" class="message"></span>
       </div>

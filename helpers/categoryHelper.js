@@ -5,7 +5,7 @@ const Category = require('../model/categoryModel');
 const createCategory = (data) => {
     return new Promise(async(resolve, reject) => {
      
-      const category = new Category({ name: data.name, description: data.description });
+      const category = new Category({ name: data.name.toUpperCase(), description: data.description });
       category.save()
         .then(savedCategory => {
           resolve(savedCategory);

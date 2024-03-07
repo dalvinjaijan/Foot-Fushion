@@ -411,6 +411,7 @@
 	<script src="../user-assets/js/main.js"></script>
 	<script>
 		function addtocart(proId) {
+			console.log("button clicked");
 		  $.ajax({
 			url: '/addToCart/' + proId,
 			method: 'POST',
@@ -422,6 +423,7 @@
 				  icon: 'success',
 				  timer: 5000
 				})
+				location.reload()
 				
 			  }else if(response.status=='outOfStock'){
 				Swal.fire({

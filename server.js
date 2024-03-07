@@ -25,12 +25,12 @@ app.use((err, req, res, next) => {
   });
 
 
+  app.use("/admin",adminRoute)
 
 //userRoute
 app.use("/",userRoute)
 
 //adminRoute
-app.use("/admin",adminRoute)
 
 app.use((err, req, res, next) => {
     console.error(err.stack)
