@@ -126,16 +126,25 @@ const updateProduct = async (req, res) => {
   const productPage = async ( req, res ) => {
     try{
         const id = req.query.id
-        const userId=res.locals.user._id
+        
         const product = await Product.findOne({ _id : id }).populate('category')
-        const cart= await Cart.findOne({user:userId})
+
+        
         if(product.isProductListed == true && product.isListed == true){
-            if(cart){
-                res.render('product',{product : product,cart:cart})
+            if(res.locals.user){
+                const userId=res.locals.user._id
+                const cart= await Cart.findOne({user:userId})
+                    if(cart){
+                        res.render('product',{product : product,cart:cart})
+                    }
+                    else{
+                        res.render('product',{product : product,cart:{cartItems:[]}})
+                    }
             }
             else{
-                res.render('product',{product : product})
+                res.render('product',{product : product,cart:{cartItems:[]}})
             }
+            
         
         }else{
           res.redirect('/error-404')

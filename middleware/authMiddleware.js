@@ -4,8 +4,11 @@ require('dotenv').config(); // Module to Load environment variables from .env fi
 
 const requireAuth = async(req, res, next) => {
   const token = req.cookies.jwt;
-  const userId=res.locals.user._id
-  const user=await User.findOne({_id:userId})
+  if(res.locals.user){
+    const userId=res.locals.user._id
+    const user=await User.findOne({_id:userId})
+  
+  
   
 
 
@@ -15,7 +18,7 @@ const requireAuth = async(req, res, next) => {
       if (err) {
         console.log(err.message);
         res.redirect('/login');
-      } else if(user.is_Blocked==true){
+      } else if(user.is_Blocked==true && user.is_admin==0){
         res.cookie('jwt','',{maxAge:1})
         res.redirect('/')
         }else{
@@ -26,7 +29,11 @@ const requireAuth = async(req, res, next) => {
   } else {
     res.redirect('/login');
   }
-};
+}else{
+  console.log("no user found");
+  res.redirect('/login')
+}
+}
 
 // check current user
 const checkUser = (req, res, next) => {
@@ -39,7 +46,14 @@ const checkUser = (req, res, next) => {
       } else {
         const user = await User.findById(decodedToken.id);
         res.locals.user = user;
-        next();
+        if(user.is_Blocked==true && user.is_admin==0){
+          res.cookie('jwt','',{maxAge:1})
+          res.redirect('/')
+        }
+        else{
+          next()
+        }
+        ;
       }
     });
   } else {

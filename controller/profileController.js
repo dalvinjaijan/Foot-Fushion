@@ -169,34 +169,29 @@ const updatePassword = async (req, res) => {
   }
 };
 
-//   const deleteAddress = async (req,res) => {
-//     const userId=res.locals.user._id
-//     const addressId=req.query
-//     console.log(addressId)
-//     try {
-//         // Update the document by pulling the address with the specified _id
-//         const updatedUser = await Address.findOneAndUpdate(
-//             { "address._id":addressId},
-//             { $pull: { address: { _id: addressId} } },
-//             {new: true}
-            
-//         );
-//         res.redirect('/profileAddress')
-        
-
-//         // if (updatedUser) {
-//         //     console.log('Address deleted successfully:', updatedUser);
-//         //   res.redirect('/profileDetails')
-//         //   } else {
-//         //     console.log('Address not found or deletion failed.');
-//         //     return res.status(404).send("address not found")
-//         // }
-//     } catch (error) {
-//         console.error('Error deleting address:', error);
-//         throw error;
-//     }
-// };
-
+const deleteAddress = async (req, res) => {
+  const userId = res.locals.user._id;
+  const addressId = req.query.id; // Access addressId from query parameters
+  console.log(addressId);
+  try {
+      // Update the document by pulling the address with the specified _id
+      const updatedUser = await Address.findOneAndUpdate(
+          { "address._id": addressId },
+          { $pull: { address: { _id: addressId } } },
+          { new: true }
+      );
+      if (updatedUser) {
+          console.log('Address deleted successfully:', updatedUser);
+          return res.redirect('/profileDetails'); // Return here to prevent further execution
+      } else {
+          console.log('Address not found or deletion failed.');
+          return res.status(404).send("Address not found");
+      }
+  } catch (error) {
+      console.error('Error deleting address:', error);
+      return res.status(500).send("Error deleting address");
+  }
+};
 const walletTransaction = async(req,res)=>{
   try {
     const user = res.locals.user
@@ -223,6 +218,6 @@ const walletTransaction = async(req,res)=>{
     checkOutAddress,
     updateProfile,
     updatePassword,
-    // deleteAddress,
+    deleteAddress,
     walletTransaction
   }

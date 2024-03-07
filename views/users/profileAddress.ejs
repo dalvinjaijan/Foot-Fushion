@@ -366,35 +366,35 @@
             location.reload();
         }
 
-        //delete address
-//         function deleteAddress(address) {
-//             // Create an object with the address ID
-//             var formData = { 
-//                 addressId: address
-//             };
+       // delete address
+        function deleteAddress(address) {
+            // Create an object with the address ID
+            var formData = { 
+                addressId: address
+            };
 
-//             // Send the form data to the server using AJAX
-//             var xhr = new XMLHttpRequest();
-//             xhr.open("GET", "/deleteAddress", true);
-//             xhr.setRequestHeader("Content-Type", "application/json");
-//             xhr.onreadystatechange = function () {
-//                 if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-//                     // Update the specific area with the response from the server
-//                     var addressTableRow = document.getElementById("addressTableRow_" + addressId);
-//                     var newAddressTableRow = xhr.responseText;
+            // Send the form data to the server using AJAX
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/deleteAddress", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    // Update the specific area with the response from the server
+                    var addressTableRow = document.getElementById("addressTableRow_" + addressId);
+                    var newAddressTableRow = xhr.responseText;
 
-//                     // Replace the old address table row with the updated one
-//                     if (addressTableRow && newAddressTableRow) {
-//                         var tempElement = document.createElement('tr');
-//                         tempElement.innerHTML = newAddressTableRow;
-//                         addressTableRow.parentNode.replaceChild(tempElement.firstChild, addressTableRow);
-//                     }
-//                 }
-//             };
-//             xhr.send(JSON.stringify(formData));
-//             location.reload();
-//         }
-//     </script>
+                    // Replace the old address table row with the updated one
+                    if (addressTableRow && newAddressTableRow) {
+                        var tempElement = document.createElement('tr');
+                        tempElement.innerHTML = newAddressTableRow;
+                        addressTableRow.parentNode.replaceChild(tempElement.firstChild, addressTableRow);
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(formData));
+            location.reload();
+        }
+   </script>
 
 <!-- add address -->
 

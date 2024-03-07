@@ -4,6 +4,9 @@ const Order=require('../model/orderModel')
 const { ObjectId } = require("mongodb");
 const Address=require('../model/addressModel')
 const User=require('../model/userModel')
+const { v4: uuidv4 } = require('uuid');
+
+
 
 const Razorpay = require("razorpay");
 
@@ -15,15 +18,12 @@ var instance = new Razorpay({
 });
 
 const getOrderId = async (user)=>{
-  try {
-    const latestOrder = await Order.aggregate([
-      { $unwind: "$orders" }, // Unwind the orders array
-      { $sort: { "orders.createdAt": -1 } }, // Sort by createdAt in descending order
-      { $limit: 1 }, // Limit to the first document (latest order)
-  ]).exec();
-  // console.log(latestOrder);
-
-    const newNumber =  parseInt(latestOrder[0].orders.orderNumber+1)
+  try{
+const randomUUID = uuidv4();
+const randomNumber = randomUUID.replace(/\D/g, '')
+const orderNumber=randomNumber.slice(0, 8)
+const newNumber = orderNumber;
+console.log(newNumber,"newNumber");
     return newNumber
             
   } catch (error) {
@@ -181,6 +181,7 @@ const placeOrder = async (data, user) => {
       }
       
       const orderId = await getOrderId(user);
+      console.log(orderId,"orderNumber");
 
       
       
@@ -424,7 +425,74 @@ const placeOrder = async (data, user) => {
           }
         }
         
-    
+    const makePayment=async(data,user)=>{
+      try {
+        let status, orderStatus;
+      
+      if (data.paymentOption === 'cod') {
+        const userData = await User.findById(user);
+        if(data.wall1=="1"){
+          const walletTransaction = {
+            date: new Date(),
+            type: 'Debit',
+            amount: userData.wallet,
+        };
+          userData.wallet = 0;
+              await userData.save();
+  
+             
+              
+              await User.updateOne(
+                  { _id: user },
+                  { $push: { walletTransaction: walletTransaction } }
+              );
+        }
+          status = 'Success';
+          orderStatus = 'Placed';
+      } else if (data.paymentOption === 'wallet') {
+          const userData = await User.findById(user);
+          
+          if (userData.wallet < data.total) {
+
+             
+              throw new Error('Insufficient wallet balance!');
+              
+          } else {
+              userData.wallet -= data.total;
+              await userData.save();
+              
+              status = 'Success';
+              orderStatus = 'Placed';
+              
+              const walletTransaction = {
+                  date: new Date(),
+                  type: 'Debit',
+                  amount: data.total,
+              };
+              
+              await User.updateOne(
+                  { _id: user },
+                  { $push: { walletTransaction: walletTransaction } }
+              );
+          }
+      } else {
+          status = 'Pending';
+          orderStatus = 'Pending';
+      }
+      console.log(data.orderId);
+
+      const order=await Order.findOneAndUpdate({'orders._id':new ObjectId(data.orderId)},
+      {$set:{"orders.$.orderStatus":orderStatus,"orders.$.paymentStatus":status,"orders.$.paymentMethod":data.paymentOption}})
+      .then((response) => {
+        resolve(response);
+      }).catch((error) => {
+        reject(error);
+      });
+      } catch (error) {
+        
+      }
+      
+    }
 
     module.exports={checkStock,
         updateStock,
@@ -435,5 +503,6 @@ const placeOrder = async (data, user) => {
         totalCheckOutAmount,
         generateRazorpay,
         verifyPayment,
-        changePaymentStatus
+        changePaymentStatus,
+        makePayment
     }

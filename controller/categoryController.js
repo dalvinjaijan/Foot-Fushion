@@ -158,51 +158,114 @@ const removeCategoryOffer=async(req,res)=>{
     }
 };
 
-  const categoryPage = async (req,res) =>{
+  // const categoryPage = async (req,res) =>{
 
-    try{
+  //   try{
   
-  
-      const sortQuery = req.query.sort || 'default'; // Get the sort query from request query parameters (default value is 'default')
-      const minPrice = parseFloat(req.query.minPrice); // Get the minimum price from request query parameters
-      const maxPrice = parseFloat(req.query.maxPrice)
+  //     const searchQuery = req.query.Search || ''
+  //     console.log(searchQuery,"searched");
+     
+  //     const sortQuery = req.query.sort || 'default'; // Get the sort query from request query parameters (default value is 'default')
+  //     const minPrice = parseFloat(req.query.minPrice); // Get the minimum price from request query parameters
+  //     const maxPrice = parseFloat(req.query.maxPrice)
        
-      let sortOption = {};
-            if (sortQuery === 'price_asc' ||sortQuery === 'default' ) {
-              sortOption = { price: 1 }; 
-            } else if (sortQuery === 'price_desc') {
-              sortOption = { price: -1 }; 
-            }
+  //     let sortOption = {};
+  //           if (sortQuery === 'price_asc' ||sortQuery === 'default' ) {
+  //             sortOption = { price: 1 }; 
+  //           } else if (sortQuery === 'price_desc') {
+  //             sortOption = { price: -1 }; 
+  //           }
   
   
              
         
   
   
-      console.log('sortOption',sortOption);
-        const  categoryId = req.query.id
-        const category = await Category.find({ })
-        const page = parseInt(req.query.page) || 1; 
-        const limit = 6;
-        const skip = (page - 1) * limit;
-        const totalProducts = await Product.countDocuments({ category:categoryId,$and: [{ isListed: true }, { isProductListed: true }]}); // Get the total number of products
-        const totalPages = Math.ceil(totalProducts / limit);
+  //     console.log('sortOption',sortOption);
+  //       const  categoryId = req.query.id
+  //       const category = await Category.find({ })
+  //       const page = parseInt(req.query.page) || 1; 
+  //       const limit = 6;
+  //       const skip = (page - 1) * limit;
+  //       const totalProducts = await Product.countDocuments({ category:categoryId,$and: [{ isListed: true }, { isProductListed: true }]}); // Get the total number of products
+  //       const totalPages = Math.ceil(totalProducts / limit);
   
-        const categories = await Category.find({ })
+  //       const categories = await Category.find({ })
          
-        const product = await Product.find({ category:categoryId,$and: [{ isListed: true }, { isProductListed: true }]})
+  //       const product = await Product.find({ category:categoryId,$and: [{ isListed: true }, { isProductListed: true }]})
+  //       .skip(skip)
+  //       .limit(limit)
+  //       .sort(sortOption)
+  //       .populate('category')
+  //       console.log("products",product);
+  //       // console.log("categories",categories);
+  //       res.render('categoryShop',{product,category, currentPage: page, totalPages })
+  //   }
+  //   catch(err){
+  //       console.log('category page error',err);
+  //     }
+  // }
+  const categoryPage = async (req, res) => {
+    try {
+      const searchQuery = req.query.Search || '';
+      console.log(searchQuery, "searched");
+  
+      const sortQuery = req.query.sort || 'default'; 
+      const minPrice = parseFloat(req.query.minPrice); 
+      const maxPrice = parseFloat(req.query.maxPrice);
+  
+      let sortOption = {};
+      if (sortQuery === 'price_asc' || sortQuery === 'default') {
+        sortOption = { price: 1 }; 
+      } else if (sortQuery === 'price_desc') {
+        sortOption = { price: -1 }; 
+      }
+  
+      console.log('sortOption', sortOption);
+      const categoryId = req.query.id;
+  
+      // Constructing the search filter
+      const searchFilter = {
+        $and: [
+          { category: categoryId },
+          { isListed: true },
+          { isProductListed: true },
+          {
+            $or: [
+              { name: { $regex: new RegExp(searchQuery, 'i') } },
+            ],
+          },
+        ],
+      };
+      console.log(searchFilter)
+      const page = parseInt(req.query.page) || 1; 
+      const limit = 6;
+      const skip = (page - 1) * limit;
+  
+      const totalProducts = await Product.countDocuments(searchFilter);
+      const totalPages = Math.ceil(totalProducts / limit);
+  
+      const category = await Category.find({});
+      const product = await Product.find(searchFilter)
         .skip(skip)
         .limit(limit)
         .sort(sortOption)
-        .populate('category')
-        console.log("products",product);
-        // console.log("categories",categories);
-        res.render('categoryShop',{product,category, currentPage: page, totalPages })
+        .populate('category');
+  
+      console.log("products", product);
+  
+      // if (product.length === 0) {
+      //   // Render a different view or pass a message to the template
+      //   return res.render('noProductsFound', { searchQuery });
+      // }
+  
+      res.render('categoryShop', { product, category, currentPage: page, totalPages });
+    } catch (err) {
+      console.log('category page error', err);
+      res.status(500).send('Internal Server Error');
     }
-    catch(err){
-        console.log('category page error',err);
-      }
-  }
+  };
+  
   
 
   

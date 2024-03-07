@@ -4,16 +4,23 @@ const Cart = require('../model/cartModel');
 const Coupon = require('../model/couponModel')
 const orderHelper=require('../helpers/orderHelper')
 const couponHelper=require('../helpers/couponHelper')
+const { ObjectId } = require("mongodb");
+const fs = require("fs");
+const { Readable } = require('stream');
 const Order=require('../model/orderModel');
-const { response } = require('express');
+const easyinvoice = require('easyinvoice')
 const checkOut = async (req,res)=>{         
     try {
         const user = res.locals.user
+       
+        const userDetails=await User.findOne({_id:user.id})
+    
         const total = await Cart.findOne({ user: user.id });
+        
         const address = await Address.findOne({user:user._id}).lean().exec()
         const coupon= await Coupon.find({})
         const userData =  await user.wallet
-        console.log(userData);
+        
         
         
         const cart = await Cart.aggregate([
@@ -41,7 +48,7 @@ const checkOut = async (req,res)=>{
             }
           ]);
       if(address){
-        res.render('checkOut',{address:address.address,cart,total,userData,coupon:coupon}) 
+        res.render('checkOut',{address:address.address,cart,total,userData,coupon:coupon,userDetails:userDetails}) 
       }else{
         res.render('checkOut',{address:[],cart,total})
       }
@@ -115,6 +122,7 @@ const changePrimary = async (req, res) => {
         }
       }else{
         await Cart.deleteOne({ user:userId  })  
+        console.log("this");
         res.json({ status: 'OrderFailed' });
       }
   
@@ -274,11 +282,13 @@ const verifyPayment = async (req, res) => {
 const paymentFailed = async(req,res)=>{
   try {
     const order = req.body
-    const deleted = await Order.updateOne(
+    const pending= await Order.updateOne(
       { "orders._id": new ObjectId(order.order.receipt) },
-      { $pull: { orders: { _id:new ObjectId(order.order.receipt) } } }
+      { $set: { "orders.$.orderStatus": "Pending",
+      "orders.$.paymentStatus": "Pending"} }
 
     )
+    
     res.send({status:true})
   } catch (error) {
     
@@ -286,6 +296,225 @@ const paymentFailed = async(req,res)=>{
   
 }
 
+const loadRetryPayment=async(req,res)=>{
+  try {
+    const user = res.locals.user
+        const total = await Cart.findOne({ user: user.id });
+        const userData =  await user.wallet
+        console.log(userData);
+        
+        
+        const cart = await Cart.aggregate([
+            {
+              $match: { user: user.id }
+            },
+            {
+              $unwind: "$cartItems"
+            },
+            {
+              $lookup: {
+                from: "products",
+                localField: "cartItems.productId",
+                foreignField: "_id",
+                as: "carted"
+              }
+            },
+            {
+              $project: {
+                item: "$cartItems.productId",
+                quantity: "$cartItems.quantity",
+                total: "$cartItems.total",
+                carted: { $arrayElemAt: ["$carted", 0] }
+              }
+            }
+          ]);
+          
+         
+          const orderId=req.query.id
+          
+      
+        res.render('paymentPage',{cart,total,userData,orderId}) 
+  } catch (error) {
+    console.log(error.message)
+  }
+} 
+const postRetryPayment=async(req,res)=>{
+  try {
+    const userId = res.locals.user._id;
+    
+    
+    const data = req.body;
+    console.log(data)
+    const userData = await User.findById(userId);
+    
+
+    req.session.wallet=data.wall1
+   
+    try { 
+      
+      const checkStock = await orderHelper.checkStock(userId)
+     
+
+
+      if(checkStock){
+      if (data.paymentOption === "cod") { 
+         const updatedStock = await orderHelper.updateStock(userId)
+        const response = await orderHelper.makePayment(data,userId);
+        await Cart.deleteOne({ user:userId  })
+        res.json({ codStatus: true });
+      } 
+        else if (data.paymentOption === "wallet") {
+          const updatedStock = await orderHelper.updateStock(userId)
+          const response = await orderHelper.makePayment(data,userId);
+          res.json({ orderStatus: true, message: "order placed successfully" });
+          await Cart.deleteOne({ user:userId  })
+      }else if (data.paymentOption === "razorpay") {
+        const response = await orderHelper.makePayment(data,userId);
+        const order = await orderHelper.generateRazorpay(userId,data.total);
+        res.json(order);
+       
+      }
+    }else{
+      await Cart.deleteOne({ user:userId  })  
+      res.json({ status: 'OrderFailed' });
+    }
+
+    } catch (error) {
+      console.log({ error: error.message }, "22");
+      res.json({ status: false, error: error.message });
+    } 
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+
+}
+const cancelPayment=async(req,res)=>{
+  try {
+    return new Promise(async(resolve,reject)=>{
+    const orderId=req.body.orderId
+    const userId=res.locals.user._id
+    console.log(orderId);
+    await Order.findOneAndUpdate({"orders._id":new ObjectId(orderId)},
+    {$pull:{orders:{_id:new ObjectId(orderId)}}})
+    .then((response) => {
+      resolve(response); 
+    })
+    .catch((error)=>{
+      reject(error)
+    })
+    }) 
+  } catch (error) {
+    console.log(error.message)
+  }
+  
+}
+
+const downloadInvoice=async(req,res)=>{
+  try {
+    const id=req.query.id
+    const userId=res.locals.user._id
+    const result= await orderHelper.findOrder(id,userId)
+    
+    const date=result[0].createdAt.toLocaleDateString()
+    const product=result[0].productDetails 
+    
+    const order={
+      id: id,
+      orderNumber:result[0].orderNumber,
+      total:parseInt( result[0].totalPrice),
+      discountAmount: parseInt(result[0].discountAmount),
+      date: date,
+      payment: result[0].paymentMethod,
+      name: result[0].shippingAddress.item.name,
+      street: result[0].shippingAddress.item.address,
+      locality: result[0].shippingAddress.item.locality,
+      city: result[0].shippingAddress.item.city,
+      state: result[0].shippingAddress.item.state,
+      pincode: result[0].shippingAddress.item.pincode,
+      product: result[0].productDetails,
+    }
+    const products=order.product.map((product)=>({
+      "quantity":parseInt( product.quantity),
+      "description": product.productName,
+      "tax-rate":0,
+      "price":  (product.catOfferPrice <= product.productOfferPrice && product.catOfferPrice !== 0) || (product.catOfferPrice >= product.productOfferPrice && product.productOfferPrice==0 && product.catOfferPrice!=0) ? 
+      parseInt(product.catOfferPrice) : 
+      (product.productOfferPrice > 0 ? parseInt(product.productOfferPrice) : parseInt(product.productPrice))
+      
+      
+    }))
+    const total = order.totalPrice - order.discountAmount
+    var data = {
+      customize: {},
+      images: {
+        // logo: "https://public.easyinvoice.cloud/img/logo_en_original.png",
+
+        background: "https://public.easyinvoice.cloud/img/watermark-draft.jpg",
+      },
+
+
+      sender: {
+        company: "Foot Fushion",
+        address: "Brototype",
+        zip: "686633",
+        city: "Maradu",
+        country: "India",
+      },
+
+      client: {
+        company: order.name,
+        address: order.street,
+        zip: order.pincode,
+        city: order.city,
+        state: order.state,
+        country: "India",
+      },
+      information: {
+        number: order.orderNumber,
+       
+
+        
+
+        date: order.date,
+        // Invoice due date
+        "due-date": "Nil",
+        total:total
+      },
+      
+
+      products: products,
+      // The message you would like to display on the bottom of your invoice
+      "bottom-notice": "Thank you,Keep shopping.",
+    };
+    console.log(products);
+    (data.information.number);
+    (order);
+
+    easyinvoice.createInvoice(data, async function (result) {
+      //The response will contain a base64 encoded PDF file
+      await fs.writeFileSync("invoice.pdf", result.pdf, "base64");
+
+
+       // Set the response headers for downloading the file
+       res.setHeader('Content-Disposition', 'attachment; filename="invoice.pdf"');
+       res.setHeader('Content-Type', 'application/pdf');
+ 
+       // Create a readable stream from the PDF base64 string
+       const pdfStream = new Readable();
+       pdfStream.push(Buffer.from(result.pdf, 'base64'));
+       pdfStream.push(null);
+ 
+       // Pipe the stream to the response
+       pdfStream.pipe(res);
+
+      
+    });
+   
+  } catch (error) {
+    console.log(error.message)
+  }
+}
 
 module.exports={
     checkOut,
@@ -298,5 +527,9 @@ module.exports={
     verifyCoupon,
     walletStatus,
     verifyPayment,
-    paymentFailed
+    paymentFailed,
+    loadRetryPayment,
+    postRetryPayment,
+    downloadInvoice,
+    cancelPayment
 }

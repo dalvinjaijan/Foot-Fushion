@@ -96,7 +96,14 @@
                     <div class="card mb-4">
                         <article class="card-body">
                             <h5 class="card-title">Sale statistics</h5>
+                            <button onclick="monthlyData()">monthly</button>
+                            <button onclick="yearlyData()">yearly</button>
+                            <button onclick="dailyData()">daily</button>
+                            <canvas id="monthlySalesChart" height="120px"></canvas> 
+                            <canvas id="yearlySalesChart" height="120px"></canvas>
                             <canvas id="salesChart" height="120px"></canvas>
+
+
                         </article>
                     </div>
                     
@@ -132,6 +139,66 @@
                     
                 </div>
             </div>
+            
+               
+              <div class="card mb-4">
+                <header class="card-header">
+                    <h4 class="card-title">Top Selling Products</h4>
+                    
+                </header>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <div class="table-responsive">
+                            <table class="table align-middle table-nowrap mb-0">
+                                <thead>
+                                    <tr>
+                                      <th>Product Name</th>
+                                      <th>Total Quantity Sold</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <% bestSellingProducts.forEach(product => { %>
+                                      <tr>
+                                        <td><%= product._id %></td>
+                                        <td><%= product.totalQuantitySold %></td>
+                                      </tr>
+                                    <% }); %>
+                                  </tbody>
+                                </table>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+                <div class="card mb-4">
+                  <header class="card-header">
+                      <h4 class="card-title">Top Selling Categories</h4>
+                      
+                  </header>
+                  <div class="card-body">
+                      <div class="table-responsive">
+                          <div class="table-responsive">
+                              <table class="table align-middle table-nowrap mb-0">
+                  <thead>
+                    <tr>
+                    <th>category</th>
+                    <th>total saled Quantity</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  
+                    <% bestSellingCategory.forEach(categorys=>{ %>
+                      <tr>
+                      <td><%= categorys.categoryName %></td>
+                      <td><%= categorys.totalQuantitySold %></td>
+                    </tr>
+                      <% }) %>
+                   
+                  </tbody>
+                </table>
+              </div>
+            </div> 
+        </div>
+    </div>
             
 
             <div class="card mb-4">
@@ -221,10 +288,13 @@
     </main>
 
     <script>
+        window.onload = function() {
+  monthlyData();
+};
         // Sample data (replace this with your actual data)
 const datas = JSON.parse('<%- JSON.stringify(categorySales) %>');
 // Extracting labels and data for the chart
-const labels = datas.map(item => item.categoryName);
+let labels = datas.map(item => item.categoryName);
 const prices = datas.map(item => item.PriceSum);
 
 // Generate a random color for each slice of the pie chart
@@ -253,36 +323,105 @@ const myPieChart = new Chart(contexts, {
 
     </script>
 
-    <script>
-        const salesData = JSON.parse('<%- JSON.stringify(salesData) %>');
-        console.log("salesdata");
+<script>
     
-        const dates = salesData.map(item => item._id);
-        const dailySales = salesData.map(item => item.dailySales);
-    
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: dates,
-            datasets: [{
-              label: 'Daily Sales',
-              data: dailySales,
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              borderColor: 'rgba(75, 192, 192, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true
-              }
-            }
+function dailyData(){
+    const dailySalesData = JSON.parse('<%- JSON.stringify(dailySalesData) %>');
+    console.log("dailysalesdata");
+
+    const dates = dailySalesData.map(item => item._id);
+    const dailySales = dailySalesData.map(item => item.dailySales);
+
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'Daily Sales',
+          data: dailySales,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
           }
-        });
-    </script>
+        }
+      }
+    });
+}
+function monthlyData(){
+    console.log("monthlySales")
+    const monthlySalesData=JSON.parse('<%- JSON.stringify(monthSalesData) %>')
+    console.log(monthlySalesData);
+    const dates = monthlySalesData.map(item=>item.monthName);
+    const monthlySales = monthlySalesData.map(item => item.saleMonth[0] ? item.saleMonth[0].monthlySalesData : 0);
+    console.log(monthlySales,"monthlySales")
+    const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'Monthly Sales',
+          data: monthlySales,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+}
+function yearlyData(){
+    console.log("monthlySales")
+    const yearlySalesData=JSON.parse('<%- JSON.stringify(yearSalesData) %>')
+    console.log(yearlySalesData);
+    const dates = yearlySalesData.map(item=>item.year.split('-')[0]);
+    const yearlySales = yearlySalesData.map(item => item.saleYear[0] ? item.saleYear[0].yearlySalesData : 0);
+    
+    const ctx = document.getElementById('yearlySalesChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'yearly Sales',
+          data: yearlySales,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+    
+}
+    
+</script>
+
+
+
+
 
     <script>
          const salesCount = JSON.parse('<%- JSON.stringify(salesCount) %>');

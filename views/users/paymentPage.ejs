@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zxx" class="no-js">
+
+<head>
+    <!-- Mobile Specific Meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon-->
+    <link rel="shortcut icon" href="img/fav.png">
+    <!-- Author Meta -->
+    <meta name="author" content="CodePixar">
+    <!-- Meta Description -->
+    <meta name="description" content="">
+    <!-- Meta Keyword -->
+    <meta name="keywords" content="">
+    <!-- meta character set -->
+    <meta charset="UTF-8">
+    <!-- Site Title -->
+    <title>Foot Fushion</title>
+
+    <!--
+            CSS
+            ============================================= -->
+    <link rel="stylesheet" href="../user-assets/css/popup.css">
+    <link rel="stylesheet" href="css/linearicons.css">
+   
+
+    <link rel="stylesheet" href="css/owl.carousel.css">
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/nice-select.css">
+    <link rel="stylesheet" href="css/nouislider.min.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.js"></script>
+    
+    <style>
+.form-popup {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background-color: #f8f8f8;
+          border-radius: 0px;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+          z-index: 10000;
+          padding: 40px;
+          color: #000000;
+          overflow-y: auto;
+          max-height: 80vh;
+      }
+  
+      .form-container {
+          height: 100%;
+      }
+  
+      .form-popup input[type="text"],
+      .form-popup input[type="number"],
+      .form-popup input[type="email"] {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 15px;
+          border-radius: 5px;
+          border: none;
+      }
+  
+      .form-popup .btn-group {
+          display: flex;
+          justify-content: flex-end;
+      }
+  
+      .form-popup .btn {
+          margin-left: 10px;
+      }
+  
+      .form-popup::-webkit-scrollbar {
+          width: 8px;
+      }
+  
+      .form-popup::-webkit-scrollbar-track {
+          background-color: #f1f1f1;
+      }
+  
+      .form-popup::-webkit-scrollbar-thumb {
+          background-color: #888;
+      }
+  
+      .form-popup::-webkit-scrollbar-thumb:hover {
+          background-color: #555;
+      }
+      .posPay{
+        margin-top: 190px;
+      }
+      @media (max-width:992px) {
+        .posPay{
+          margin-top: 50px;
+        }
+      }
+    </style>
+
+
+</head>
+
+<body>
+
+    <!-- Start Header Area -->
+    <%- include('../layouts/header.ejs') %>	
+    <div class="container posPay">
+    <div class="row d-flex justify-content-center">
+    <div class="card col-10 my-4">
+<form id="checkOut-form">
+    <div class="order_box">
+        <h2>Your Order</h2>
+
+        <ul class="list">
+            <li><a href="#">Product <span>Total</span></a></li>
+            <% cart.forEach(function(cart,index) {%>
+
+            <li><a href="#"><%=cart.carted.name%> <span class="middle">x <%=cart.quantity%></span> <span class="last">₹<%= cart.total %></span></a></li>
+            <% }) %>
+        </ul>
+        <ul class="list list_2">
+
+            <li><a href="#">Subtotal <span id="subTotal">₹<%=total.cartTotal%></span></a></li>
+            <li><a href="#">Discount  <span id="couponOffer"></span></a></li>
+
+            <li><a href="#">Total ₹<span id="total"><%=total.cartTotal%></span></a></li>
+            <input type="hidden" name="discountPercentage" id="discountPercentage" value="0">
+            <input type="hidden" name="discountAmount" id="discountAmount" value="0">
+            <input type="hidden" name="total" value="<%=total.cartTotal%>" id="totalVal" >
+            <input type="hidden" name="wall1" value="0" id="wall1">
+            
+
+        </ul>
+<div class="payment_item">
+    <%if(user.wallet>total.cartTotal||user.wallet===0){%>
+      <div class="radion_btn">
+          <input type="radio" id="f-option4" name="paymentOption" value="wallet" >
+          <label for="f-option4" >Wallet    ₹ <%= user.wallet %></label>
+          <div class="check"></div>
+      </div>
+      <p>Pay  amount from your wallet</p>
+      <%}%>
+      
+      <%if(user.wallet<total.cartTotal&&user.wallet>0){ %>
+
+      <div class="form-check"style="padding-top: 15px; padding-bottom: 15px">
+        <input class="form-check-input "type="checkbox" value=""  id="flexCheckChecked" onclick="handleCheckboxClick" >
+        <label class="form-check-label" style="font-weight: 500; color: black; " for="flexCheckChecked">
+         USE WALLET ₹    <span  id="wall" value><%= user.wallet %></span>
+        </label>
+      </div>
+      <p>Pay  amount from your wallet</p>
+  </div>
+   <%}%>
+ 
+  
+    
+   <% if (total.cartTotal > 1000) { %>
+    <div class="payment_item">
+        <div class="radion_btn">
+            <input type="radio" id="f-option5" name="paymentOption" value="cod" checked disabled>
+            <label for="f-option5">Cash On Delivery</label>
+            <div class="check"></div>
+        </div>
+        <p class="alert-message">COD is not applicable for order above 1000</p>
+    </div>
+    <% }else { %>
+      <div class="payment_item">
+        <div class="radion_btn">
+            <input type="radio" id="f-option5" name="paymentOption" value="cod" checked >
+            <label for="f-option5">Cash On Delivery</label>
+            <div class="check"></div>
+        </div>
+        <p>Pay the amount at your doorstep</p>
+    </div>
+    <% } %>
+  <div class="payment_item">
+      <div class="radion_btn">
+      <input type="radio" id="f-option6" name="paymentOption" value="razorpay" checked>
+          <label for="f-option6">Razorpay</label>
+          <div class="check"></div>
+      </div>
+      <p>Pay through Razorpay</p>
+  </div>
+  
+  
+  <button class="primary-btn" onclick="proceedToPayment()">Make Payment</button>
+  </div>
+  <input type="hidden" value="<%= orderId %>" name="orderId">
+  </form>
+</div>
+</div></div>
+  <%- include('../layouts/footer.ejs') %>	
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="../user-assets/js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="../user-assets/https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+        crossorigin="anonymous"></script>
+    <script src="../user-assets/js/vendor/bootstrap.min.js"></script>
+    <script src="../user-assets/js/jquery.ajaxchimp.min.js"></script>
+    <script src="../user-assets/js/jquery.nice-select.min.js"></script>
+    <script src="../user-assets/js/jquery.sticky.js"></script>
+    <script src="../user-assets/js/nouislider.min.js"></script>
+    <script src="../user-assets/js/jquery.magnific-popup.min.js"></script>
+    <script src="../user-assets/js/owl.carousel.min.js"></script>
+    <!--gmaps Js-->
+    <script src="../user-assets/https://maps.googleapis.com/maps/api/js?key=AIzaSyCjCGmQ0Uq4exrzdcL6rvxywDDOvfAu6eE"></script>
+    <script src="../user-assets/js/gmaps.min.js"></script>
+    <script src="../user-assets/js/main.js"></script>
+
+
+<script>
+    
+      function proceedToPayment() {
+        event.preventDefault()
+  $.ajax({
+    url: "/retryPayment",
+    method: 'POST',
+    data: $('#checkOut-form').serialize(),
+    success: (response) => {
+      console.log(response,'+++++=========== ');
+      if (response.error) {
+        console.log(response,'error--------------------------------');
+
+        console.log(response.error.message,'---------------');
+        Swal.fire({
+          title: 'Error!',
+          text: response.error,
+          icon: 'error',
+          timer: 5000
+        })
+      } else if (response.codStatus == true) {
+        console.log(response,'status');
+        Swal.fire({
+          title: 'Order Placed!',
+          text: 'Your order has been placed successfully.',
+          icon: 'success',
+          timer: 5000
+        }).then(() => {
+          location.href = '/'
+        })
+      }else if (response.orderStatus== true) {
+        Swal.fire({
+          title: 'Order Placed!',
+          text: 'Your order has been placed successfully.',
+          icon: 'success',
+          timer: 5000
+        }).then(() => {
+          location.href = '/'
+        })
+      }else if (response.status== "OrderFailed") {
+        Swal.fire({
+          title: 'Order Failed!',
+          text: 'Your Product is Out of Stock .Please Check after some time',
+          icon: 'error',
+          timer: 5000
+        }).then(() => {
+          location.href = '/'
+        })
+      }
+       else {
+        try {
+          razorpay(response)
+          console.log(response, '1');
+          console.log(response.amount, '2');
+        } catch (error) {
+          Swal.fire({
+            title: 'Error!',
+            text: error.message,
+            icon: 'error',
+            timer: 5000
+          })
+        }
+      } 
+    }
+})
+}
+function razorpay(order) {
+    console.log(order, 'order');
+    console.log(order.amount, 'amount');
+    var options = {
+      "key": "rzp_test_fA2Jud7VVGGMqr", // Enter the Key ID generated from the Dashboard
+      "amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+      "currency": "INR",
+      "name": "Foot Fushion",
+      "description": "Test Transaction",
+      "image": "../images/logo.png",
+      "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+      "handler": function(response) {
+        console.log(response,'++++++++++',order);
+        verifypayment(response, order)
+      },
+
+      "modal": {
+      "ondismiss": function() {
+        console.log('Payment window closed');
+        paymentFailed(order);
+      }
+    },
+
+      "prefill": {
+        "name": "Vinayak",
+        "email": "vinayak@example.com",
+        "contact": "8848516232"
+      },
+      "notes": {
+        "address": "Razorpay Corporate Office"
+      },
+      "theme": {
+        "color": "#3399cc"
+      }
+    }
+    var rzp1 = new Razorpay(options)
+    rzp1.open();
+  }
+
+  function verifypayment(payment, order,paymentId) {
+    console.log('12121212121212',payment, order, paymentId,'-------------1212121212121212--');
+    $.ajax({
+      url: 'verifyPayment',
+      method: 'post',
+      data: {
+        payment,
+        order,
+        paymentId
+      },
+       
+      success: (response) => {
+        if (response.status) {
+          Swal.fire({
+            title: 'Order Placed!',
+            text: 'Your order has been placed successfully.',
+            icon: 'success',
+            timer: 5000
+          }).then(() => {
+            location.href = '/'
+          })
+        } else {
+
+        }
+
+      }
+    })
+  }
+
+  function paymentFailed(order) {
+    $.ajax({
+      url: 'paymentFailed',
+      method: 'post',
+      data: {
+        order,
+      },
+       
+      success: (response) => {
+        if (response.status) {
+          Swal.fire({
+            title: 'Order Failed!',
+            text: 'Your order is failed.',
+            icon: 'error',
+            timer: 5000
+          }).then(() => {
+            location.href = '/'
+          })
+        } else {
+
+        }
+
+      }
+    })
+  }
+  var checkbox = document.getElementById("flexCheckChecked");
+    
+
+    // Define a function to be called when the checkbox is clicked
+    function handleCheckboxClick() {
+        // Your code to be executed when the checkbox is clicked goes here
+      
+        if (checkbox.checked) {
+            console.log("Checkbox is selected");
+            const total=document.getElementById("total").innerText
+            const wall=document.getElementById("wall").innerText
+
+            newTotal = total - wall
+            document.getElementById("total").innerText = "₹" + newTotal;
+            document.getElementById('totalVal').value = newTotal
+            document.getElementById('wall1').value = "1"
+            console.log( newTotal);
+
+        
+            
+
+            // Perform actions when the checkbox is selected
+        } else {
+            console.log("Checkbox is not selected");
+            document.getElementById("total").innerText =  <%=total.cartTotal%>;
+            document.getElementById('totalVal').value = <%=total.cartTotal%>;
+            document.getElementById('wall1').value = "0"
+            // Perform actions when the checkbox is not selected
+        }
+    }
+
+  
+
+    // Attach an event listener to the checkbox element
+    checkbox.addEventListener("click", handleCheckboxClick);
+
+</script>
+    
+</body>
+
+</html>
