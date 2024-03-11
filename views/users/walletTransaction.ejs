@@ -1,6 +1,12 @@
 
 
 <%-include('../layouts/profileHeader.ejs')%>    
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+
+
 
 
 
@@ -20,14 +26,14 @@
 					<div class="media">
 						
 						<div class="table-responsive">
-                            <table class="table">
+                            <table class="table" id="myTable">
                                 <thead>
                                     <tr>
                                         <th>Sl No</th>
                                         <th>Date</th>
                                         <th>Amount</th>
                                         <th>Transaction type</th>
-                                        <th></th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -38,9 +44,14 @@
                                         <td>₹ <%=wallet.walletTransaction.amount%></td>
                                         <%if(wallet.walletTransaction.type=="Credit"){%>
                                         <td><span class="label label-success"><%=wallet.walletTransaction.type%></span></td>
-                                        <%}else{%>
+                                        <%}else if(wallet.walletTransaction.type=="Debit"){%>
                                         <td><span class="label label-danger"><%=wallet.walletTransaction.type%></span></td>
-                                        <%}%>
+                                        <%} else if(wallet.walletTransaction.type=="wallet recharge"){%>
+                                         <td><span class="label label-primary"><%=wallet.walletTransaction.type%></span></td>
+                                         <%} else if(wallet.walletTransaction.type=="Referral"){%>
+                                         <td><span class="label label-warning"><%=wallet.walletTransaction.type%></span></td>
+
+                                         <%} %>
                                     </tr>
                                     <% }) %>
   
@@ -48,9 +59,9 @@
                             </table>
                         </div>
 					</div>
-					<div class="total-order mt-20">
+					<!-- <div class="total-order mt-20">
 						
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>
@@ -88,10 +99,19 @@
 
     <!-- Main Js File -->
     <script src="../theme/js/script.js"></script>
-
     
-    
-
+        
+    <script>
+        $(document).ready(function() {
+          $.noConflict();
+          $('#myTable').DataTable({
+            "paging": true,          // Enable pagination
+            "pageLength": 10,        // Number of rows per page
+            "lengthMenu": [10, 25, 50, 75, 100],  // Dropdown options for rows per page
+      
+          });
+        });
+        </script>
 
   </body>
   </html>

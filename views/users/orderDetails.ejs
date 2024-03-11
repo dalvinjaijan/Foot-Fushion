@@ -15,7 +15,7 @@
 	<!-- meta character set -->
 	<meta charset="UTF-8">
 	<!-- Site Title -->
-	<title>Foot Fushion</title>
+	<title>Foot Fusion</title>
 
 	<!--
 		CSS
@@ -59,8 +59,9 @@
 				<div class="col-lg-4">
 					<div class="details_item">
 						<h4>Order Info</h4>
+						
 						<ul class="list">
-							<li><a href="#"><span>Order ID</span> :<%=orders[0]._id%></a></li>
+							<li><a href="#"><span>Order ID</span> :<%=orders[0].orderNumber%></a></li>
 							<li><a href="#"><span>Date</span> : <%=orders[0].createdAt.toLocaleString()%></a></li>
 							<li><a href="#"><span>Total</span> : ₹<%=orders[0].totalPrice%></a></li>
 							<li><a href="#"><span>Payment method</span> : <%=orders[0].paymentMethod%></a></li>
@@ -186,7 +187,8 @@
 								</td>
 								<td>
 								<%	if(orders[0].orderStatus == 'Delivered'){ %>
-									<a href="/invoice?id=<%=orders[0]._id%>" class="btn btn-primary">Download Invoice</a>
+									<a 
+									href="/invoice?id=<%=orders[0]._id%>"class="btn btn-primary" >Download Invoice</a>
 									 <% }  %>
 								</td>
 							</tr>
@@ -203,8 +205,16 @@
 	<%- include('../layouts/footer.ejs') %>	
 
 	<!-- End footer Area -->
-
-
+	<script src="https://cdn.jsdelivr.net/npm/easyinvoice/dist/easyinvoice.min.js"></script>
+		<!-- <script>
+		async function invoice(oid){
+		const url=`/invoice?id=${oid}`
+		const res=await fetch(url)
+		const data=res.json()
+		console.log(res)
+		console.log(data)
+	}
+</script> -->
 
 
 	<script src="../user-assets/js/vendor/jquery-2.2.4.min.js"></script>

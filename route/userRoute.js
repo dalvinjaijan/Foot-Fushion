@@ -79,6 +79,12 @@ userRoute.post('/changeDefaultAddress',orderController.changePrimary)
 
 userRoute.get('/wallet',profileController.walletTransaction)
 userRoute.get('/walletStatus/:id',validate.requireAuth,orderController.walletStatus)
+userRoute.post('/walletRecharge',validate.requireAuth,orderController.rechargeWallet)
+userRoute.post('/verifyPaymentWallet',orderController.verifyPaymentWallet)  
+userRoute.post('/paymentFailedWallet',orderController.paymentFailedWallet)  
+
+
+
 
 userRoute.get('/profileorderList',validate.requireAuth,orderController.orderList)
 userRoute.get('/retryPayment',validate.requireAuth,orderController.loadRetryPayment)

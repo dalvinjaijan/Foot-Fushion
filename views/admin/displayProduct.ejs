@@ -5,7 +5,7 @@
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/page-products-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:33:00 GMT -->
 <head>
     <meta charset="utf-8">
-    <title>Foot Fushion</title>
+    <title>Foot Fusion</title>
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,6 +18,10 @@
     <!-- Template CSS -->
     <link href="../admin-assets/css/main.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
     
 </head>
 
@@ -101,7 +105,7 @@
 
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover" id="myTable">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -324,6 +328,17 @@
             })
         }
 </script>
+<script>
+    $(document).ready(function() {
+      $.noConflict();
+      $('#myTable').DataTable({
+        "paging": true,          // Enable pagination
+        "pageLength": 10,        // Number of rows per page
+        "lengthMenu": [10, 25, 50, 75, 100],  // Dropdown options for rows per page
+  
+      });
+    });
+    </script>
 
 <!-- Mirrored from wp.alithemes.com/html/evara/evara-backend/page-products-list.html by HTTrack Website Copier/3.x [XR&CO'2014], Sun, 01 Aug 2021 15:33:12 GMT -->
 </html>0

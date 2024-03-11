@@ -15,7 +15,7 @@
     <!-- meta character set -->
     <meta charset="UTF-8">
     <!-- Site Title -->
-    <title>Foot Fushion</title>
+    <title>Foot Fusion</title>
 
     <!--
             CSS
@@ -123,19 +123,21 @@
         </ul>
         <ul class="list list_2">
 
-            <li><a href="#">Subtotal <span id="subTotal">₹<%=total.cartTotal%></span></a></li>
-            <li><a href="#">Discount  <span id="couponOffer"></span></a></li>
+            <li><a href="#">Subtotal <span id="subTotal">₹<%=subTotal.cartTotal%></span></a></li>
+            <li><a href="#">Discount  <% if(discountAmount!= 0){ %> <span> <%= discountAmount %> </span><% }else { %>
+              <span id="couponOffer"></span> <% } %></a></li> 
 
-            <li><a href="#">Total ₹<span id="total"><%=total.cartTotal%></span></a></li>
+            <li><a href="#">Total ₹<span id="total"><%=total%></span></a></li>
             <input type="hidden" name="discountPercentage" id="discountPercentage" value="0">
             <input type="hidden" name="discountAmount" id="discountAmount" value="0">
-            <input type="hidden" name="total" value="<%=total.cartTotal%>" id="totalVal" >
+            <input type="hidden" name="total" value="<%=total%>" id="totalVal" >
             <input type="hidden" name="wall1" value="0" id="wall1">
             
 
         </ul>
+       
 <div class="payment_item">
-    <%if(user.wallet>total.cartTotal||user.wallet===0){%>
+    <%if(user.wallet>total||user.wallet===0){%>
       <div class="radion_btn">
           <input type="radio" id="f-option4" name="paymentOption" value="wallet" >
           <label for="f-option4" >Wallet    ₹ <%= user.wallet %></label>
@@ -144,10 +146,10 @@
       <p>Pay  amount from your wallet</p>
       <%}%>
       
-      <%if(user.wallet<total.cartTotal&&user.wallet>0){ %>
+      <%if(user.wallet<total&&user.wallet>0){ %>
 
       <div class="form-check"style="padding-top: 15px; padding-bottom: 15px">
-        <input class="form-check-input "type="checkbox" value=""  id="flexCheckChecked" onclick="handleCheckboxClick" >
+        <input class="form-check-input "type="checkbox" value=""  id="flexCheckChecked" >
         <label class="form-check-label" style="font-weight: 500; color: black; " for="flexCheckChecked">
          USE WALLET ₹    <span  id="wall" value><%= user.wallet %></span>
         </label>
@@ -158,7 +160,7 @@
  
   
     
-   <% if (total.cartTotal > 1000) { %>
+   <% if (total > 1000) { %>
     <div class="payment_item">
         <div class="radion_btn">
             <input type="radio" id="f-option5" name="paymentOption" value="cod" checked disabled>
@@ -187,13 +189,15 @@
   </div>
   
   
-  <button class="primary-btn" onclick="proceedToPayment()">Make Payment</button>
+  <button class="primary-btn" onclick="proceedToPayment()"> Make Payment</button>
   </div>
   <input type="hidden" value="<%= orderId %>" name="orderId">
   </form>
 </div>
-</div></div>
+
   <%- include('../layouts/footer.ejs') %>	
+  
+  
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="../user-assets/js/vendor/jquery-2.2.4.min.js"></script>
     <script src="../user-assets/https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
@@ -214,6 +218,7 @@
 <script>
     
       function proceedToPayment() {
+        console.log("button clicked");
         event.preventDefault()
   $.ajax({
     url: "/retryPayment",
@@ -277,6 +282,8 @@
     }
 })
 }
+
+
 function razorpay(order) {
     console.log(order, 'order');
     console.log(order.amount, 'amount');
@@ -284,7 +291,7 @@ function razorpay(order) {
       "key": "rzp_test_fA2Jud7VVGGMqr", // Enter the Key ID generated from the Dashboard
       "amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
       "currency": "INR",
-      "name": "Foot Fushion",
+      "name": "Foot Fusion",
       "description": "Test Transaction",
       "image": "../images/logo.png",
       "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
@@ -380,13 +387,16 @@ function razorpay(order) {
         if (checkbox.checked) {
             console.log("Checkbox is selected");
             const total=document.getElementById("total").innerText
+            console.log(total,"total");
             const wall=document.getElementById("wall").innerText
+            console.log(wall);
 
             newTotal = total - wall
-            document.getElementById("total").innerText = "₹" + newTotal;
+            console.log(newTotal,"newTotal");
+            document.getElementById("total").innerText =newTotal;
             document.getElementById('totalVal').value = newTotal
             document.getElementById('wall1').value = "1"
-            console.log( newTotal);
+            
 
         
             
@@ -394,8 +404,8 @@ function razorpay(order) {
             // Perform actions when the checkbox is selected
         } else {
             console.log("Checkbox is not selected");
-            document.getElementById("total").innerText =  <%=total.cartTotal%>;
-            document.getElementById('totalVal').value = <%=total.cartTotal%>;
+            document.getElementById("total").innerText =  <%=total%>;
+            document.getElementById('totalVal').value = <%=total%>;
             document.getElementById('wall1').value = "0"
             // Perform actions when the checkbox is not selected
         }
@@ -405,8 +415,10 @@ function razorpay(order) {
 
     // Attach an event listener to the checkbox element
     checkbox.addEventListener("click", handleCheckboxClick);
+   
 
 </script>
+
     
 </body>
 

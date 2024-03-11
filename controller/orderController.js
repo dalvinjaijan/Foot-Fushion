@@ -8,7 +8,8 @@ const { ObjectId } = require("mongodb");
 const fs = require("fs");
 const { Readable } = require('stream');
 const Order=require('../model/orderModel');
-const easyinvoice = require('easyinvoice')
+const easyinvoice = require('easyinvoice');
+const { loadavg } = require('os');
 const checkOut = async (req,res)=>{         
     try {
         const user = res.locals.user
@@ -50,7 +51,7 @@ const checkOut = async (req,res)=>{
       if(address){
         res.render('checkOut',{address:address.address,cart,total,userData,coupon:coupon,userDetails:userDetails}) 
       }else{
-        res.render('checkOut',{address:[],cart,total})
+        res.render('checkOut',{address:[],cart,total,userData,coupon:coupon,userDetails:userDetails})
       }
     } catch (error) {
         console.log(error.message)
@@ -149,8 +150,11 @@ const changePrimary = async (req, res) => {
         { $unwind: "$orders" },
         { $sort: { "orders.createdAt": -1 } },
       ])
+     if( orders.length > 0){
       const datess = currentDate-orders[0].orders.createdAt
-      await(datess / (1000 * 3600 * 24))
+      await (datess / (1000 * 3600 * 24))
+     }
+      
       res.render('profileOrder',{orders,currentDate})
   
       
@@ -299,9 +303,15 @@ const paymentFailed = async(req,res)=>{
 const loadRetryPayment=async(req,res)=>{
   try {
     const user = res.locals.user
-        const total = await Cart.findOne({ user: user.id });
+    const orderId=req.query.id
+         const subTotal = await Cart.findOne({ user: user.id });
+        const order= await Order.aggregate([{$match:{user:new ObjectId(user.id)}},{$unwind:"$orders"},{$match:{"orders._id":new ObjectId(orderId)}}])
+       console.log(order[0].orders.totalPrice,"total");
+       const total=order[0].orders.totalPrice
         const userData =  await user.wallet
-        console.log(userData);
+        const userDetails=await User.findOne({_id:user.id})
+        const coupon= await Coupon.find({})
+        
         
         
         const cart = await Cart.aggregate([
@@ -330,10 +340,18 @@ const loadRetryPayment=async(req,res)=>{
           ]);
           
          
-          const orderId=req.query.id
           
-      
-        res.render('paymentPage',{cart,total,userData,orderId}) 
+          
+      if(order[0].orders.discountAmount!=0){
+       let discountAmount=order[0].orders.discountAmount
+        console.log(discountAmount);
+        res.render('paymentPage',{cart,total,discountAmount,userData,subTotal,orderId,coupon:coupon,userDetails:userDetails}) 
+
+      }else{
+        let discountAmount=0
+        res.render('paymentPage',{cart,total,discountAmount,userData,subTotal,orderId,coupon:coupon,userDetails:userDetails}) 
+      }
+   
   } catch (error) {
     console.log(error.message)
   }
@@ -423,7 +441,6 @@ const downloadInvoice=async(req,res)=>{
       id: id,
       orderNumber:result[0].orderNumber,
       total:parseInt( result[0].totalPrice),
-      discountAmount: parseInt(result[0].discountAmount),
       date: date,
       payment: result[0].paymentMethod,
       name: result[0].shippingAddress.item.name,
@@ -444,13 +461,13 @@ const downloadInvoice=async(req,res)=>{
       
       
     }))
-    const total = order.totalPrice - order.discountAmount
+   
     var data = {
       customize: {},
       images: {
         // logo: "https://public.easyinvoice.cloud/img/logo_en_original.png",
 
-        background: "https://public.easyinvoice.cloud/img/watermark-draft.jpg",
+          // background: "https://public.easyinvoice.cloud/img/watermark-draft.jpg",
       },
 
 
@@ -479,7 +496,7 @@ const downloadInvoice=async(req,res)=>{
         date: order.date,
         // Invoice due date
         "due-date": "Nil",
-        total:total
+      
       },
       
 
@@ -487,33 +504,91 @@ const downloadInvoice=async(req,res)=>{
       // The message you would like to display on the bottom of your invoice
       "bottom-notice": "Thank you,Keep shopping.",
     };
-    console.log(products);
-    (data.information.number);
-    (order);
-
-    easyinvoice.createInvoice(data, async function (result) {
-      //The response will contain a base64 encoded PDF file
-      await fs.writeFileSync("invoice.pdf", result.pdf, "base64");
-
-
-       // Set the response headers for downloading the file
-       res.setHeader('Content-Disposition', 'attachment; filename="invoice.pdf"');
-       res.setHeader('Content-Type', 'application/pdf');
- 
-       // Create a readable stream from the PDF base64 string
-       const pdfStream = new Readable();
-       pdfStream.push(Buffer.from(result.pdf, 'base64'));
-       pdfStream.push(null);
- 
-       // Pipe the stream to the response
-       pdfStream.pipe(res);
-
-      
-    });
-   
+    console.log(products,"product");
+    // (data.information.number);
+    // (order);
+  //  await easyinvoice.createInvoice(data, function (result) {
+  //     // The response will contain a base64 encoded PDF file
+  //     console.log('PDF base64 string: ', result);
+  //     res.json(result)
+    
+  //   })
+    try {
+      await easyinvoice.createInvoice(data, async function (result) {
+        // The response will contain a base64 encoded PDF file
+        try {
+          await fs.writeFileSync("invoice.pdf", result.pdf, "base64");
+    
+          // Set the response headers for downloading the file
+          res.setHeader('Content-Disposition', 'attachment; filename="invoice.pdf"');
+          res.setHeader('Content-Type', 'application/pdf');
+    
+          // Create a readable stream from the PDF base64 string
+          const pdfStream = new Readable();
+          pdfStream.push(Buffer.from(result.pdf, 'base64'));
+          pdfStream.push(null);
+    
+          // Pipe the stream to the response
+          pdfStream.pipe(res);
+        } catch (error) {
+          console.error("Error writing PDF:", error);
+          res.status(500).send("Error generating PDF");
+        }
+      }).catch(error => {
+        console.error("Error creating invoice:", error);
+        // res.status(500).send("Error creating invoice");
+      });
+    } catch (error) {
+      console.error("Error in downloadInvoice:", error);
+      res.status(500).send("Internal server error");
+    }
+    
   } catch (error) {
-    console.log(error.message)
+    console.log(error.message);
+  }
+}
+
+
+const rechargeWallet=async(req,res)=>{
+  try{
+    const rechargeAmount=req.body.rechargeAmount
+    console.log(rechargeAmount,'recharge');
+    const userId=res.locals.user._id
+    const order= await orderHelper.generateRazorpayWallet(userId,rechargeAmount)
+    res.json(order);
+
   }
+catch (error) {
+  console.log({ error: error.message }, "22");
+  res.json({ status: false, error: error.message });
+} 
+}
+const verifyPaymentWallet=async(req,res)=>{
+  orderHelper.verifyPayment(req.body).then(() => {
+    console.log("verifypayment done");
+    orderHelper
+      .updateWallet(res.locals.user._id, req.body.order.receipt,req.body.payment.razorpay_payment_id,req.body.order.amount)
+      .then(() => {
+        res.json({ status: true });
+      })
+      .catch((err) => {
+        res.json({ status: false });
+      });
+  }).catch(async(err)=>{
+    
+    console.log(err);
+
+  });
+
+}
+const paymentFailedWallet= async(req,res)=>{
+  try {
+    console.log("payment failed");
+    res.send({status:true})
+  } catch (error) {
+    
+  }
+  
 }
 
 module.exports={
@@ -531,5 +606,8 @@ module.exports={
     loadRetryPayment,
     postRetryPayment,
     downloadInvoice,
-    cancelPayment
+    cancelPayment,
+    rechargeWallet,
+    verifyPaymentWallet,
+    paymentFailedWallet
 }

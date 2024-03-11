@@ -1,4 +1,8 @@
 <%-include('../layouts/profileHeader.ejs')%>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
 
     <style>
         /* CSS styles for the popup form */
@@ -75,7 +79,7 @@
                     </ul>
                     <div class="dashboard-wrapper user-dashboard">
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table" id="myTable">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
@@ -231,6 +235,17 @@
     <!-- 
     Essential Scripts
     =====================================-->
+    <script>
+        $(document).ready(function() {
+          $.noConflict();
+          $('#myTable').DataTable({
+            "paging": true,          // Enable pagination
+            "pageLength": 10,        // Number of rows per page
+            "lengthMenu": [10, 25, 50, 75, 100],  // Dropdown options for rows per page
+      
+          });
+        });
+        </script>
 
     <!-- Main jQuery -->
     <script src="plugins/jquery/dist/jquery.min.js"></script>

@@ -39,6 +39,9 @@ const userSchema=mongoose.Schema({
     },
     coupons:{
         type:Array,
+    },
+    referralString:{
+        type:String
     }
 })
 

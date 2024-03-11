@@ -15,7 +15,7 @@
     <!-- meta character set -->
     <meta charset="UTF-8">
     <!-- Site Title -->
-    <title>Foot Fushion</title>
+    <title>Foot Fusion</title>
 
     <!--
             CSS
@@ -223,7 +223,7 @@
                                 <%if(user.wallet<total.cartTotal&&user.wallet>0){ %>
 
                                 <div class="form-check"style="padding-top: 15px; padding-bottom: 15px">
-                                  <input class="form-check-input "type="checkbox" value=""  id="flexCheckChecked" onclick="handleCheckboxClick" >
+                                  <input class="form-check-input "type="checkbox" value=""  id="flexCheckChecked"  >
                                   <label class="form-check-label" style="font-weight: 500; color: black; " for="flexCheckChecked">
                                    USE WALLET ₹    <span  id="wall" value><%= user.wallet %></span>
                                   </label>
@@ -731,7 +731,7 @@ function applyCoupon(total) {
       "key": "rzp_test_fA2Jud7VVGGMqr", // Enter the Key ID generated from the Dashboard
       "amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
       "currency": "INR",
-      "name": "Foot Fushion",
+      "name": "Foot Fusion",
       "description": "Test Transaction",
       "image": "../images/logo.png",
       "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
