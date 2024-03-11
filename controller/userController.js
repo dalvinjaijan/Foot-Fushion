@@ -4,6 +4,7 @@ const userHelper=require('../helpers/userHelper')
 const Category=require('../model/categoryModel')
 const Product=require('../model/productModel')
 const Cart=require('../model/cartModel')
+const Banner=require('../model/bannerModel')
 
 const bcrypt= require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -18,30 +19,24 @@ const createToken = (id)=>{
 }
 
 
-// const securePassword = async(password)=>{
-//     try{
-//         const passwordHash = await bcrypt.hash(password,10)
-//         return passwordHash
-//     }catch(error){
-//         console.log(error.message);
-//     }
-// }
+
 
 
 const loadHome = async(req,res)=>{
     try {
+      const banner=await Banner.find({ isBannerListed: true })
       if(res.locals.user){
         const userId=res.locals.user._id
         const cart=await Cart.findOne({user:userId})
         if(cart){
           console.log("cart is there",cart)
-          res.render('index',{cart:cart})
+          res.render('index',{cart:cart,banner})
       }else{
-        res.render('index',{cart:{cartItems:[]}})
+        res.render('index',{cart:{cartItems:[]},banner})
       }
        
         }else{
-          res.render('index',{cart:{cartItems:[]}})
+          res.render('index',{cart:{cartItems:[]},banner})
         }
         
     } catch (error) {
@@ -66,6 +61,12 @@ const loadLogin=async(req,res)=>{
 
 const loadRegister=async(req,res)=>{
     try {
+      if(req.query.ref){
+        const ref=req.query.ref
+        req.session.ref=ref
+        
+        console.log(ref,"dsfsd");
+      }
         res.render('signup')
         
     } catch (error) {
@@ -108,13 +109,14 @@ const loadRegister=async(req,res)=>{
     }
    
 
-
+    
    
     
     const otp = otpHelper.generateOTP();
     try {
         req.session.userData=req.body
         req.session.otp = otp 
+        console.log(otp,'otp');
         
 
     } catch (error) {
@@ -142,16 +144,34 @@ const loadRegister=async(req,res)=>{
         // console.log(otp,otpfrom,userData)
     if(otpfrom === otp){
     const spassword =await bcrypt.hash(userData.password,10)
+
         const user = new User({
             fname:userData.fname,
             lname:userData.lname,
             email:userData.email,
             mobile:userData.mno,
             password:spassword,
-            is_admin:0
+            referralString:'',
+            is_admin:0,
+            wallet:100,
+            
         })
         const userDataSave = await user.save()
         if(userDataSave){
+          
+          userDataSave.referralString=`${req.headers.host}/signup?ref=${userDataSave._id}`
+          console.log(userDataSave.referralString)
+          userDataSave.walletTransaction=[{date: new Date(),
+            type: 'Referral',
+            amount: 100}]
+         await userDataSave.save()
+         if(req.session.ref){
+          await User.findByIdAndUpdate({_id:req.session.ref},{$inc:{wallet:100},$push:{walletTransaction:{
+            date: new Date(),
+              type: 'Referral',
+              amount: 100
+          }}})
+         }
             const token = createToken(user._id);
             res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
             res.redirect('/')

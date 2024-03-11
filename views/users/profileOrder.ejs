@@ -1,6 +1,6 @@
 <%-include('../layouts/profileHeader.ejs')%>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
@@ -37,6 +37,7 @@
           <li><a href="/wallet">Transactions</a></li>
 
 				</ul>
+        <%if(orders != undefined){%>
 				<div class="dashboard-wrapper user-dashboard">
 					<div class="table-responsive">
 						<table class="table" id="myTable">
@@ -187,6 +188,9 @@
             
 					</div>
 				</div>
+        <% } else { %>
+          <h2>No orders Yet</h2>
+        <% } %>
 			</div>
 		</div>
 	</div>

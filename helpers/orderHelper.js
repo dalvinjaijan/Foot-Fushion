@@ -9,6 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 
 
 const Razorpay = require("razorpay");
+const { rechargeWallet } = require('../controller/orderController');
 
 require('dotenv').config();
 
@@ -351,6 +352,7 @@ const placeOrder = async (data, user) => {
           try {
             return new Promise(async (resolve, reject) => {
               let orders = await Order.find({ user: userId });
+              console.log(orders,"hi");
         
               let order = orders[0].orders.slice().reverse();
             
@@ -376,7 +378,8 @@ const placeOrder = async (data, user) => {
 
         const verifyPayment =  async(details) => {
           try {
-            await Order.updateOne({})
+            console.log("inside razorPay");
+            
         
             let key_secret = process.env.RAZORPAY_SECRET;
             return new Promise((resolve, reject) => {
@@ -493,6 +496,55 @@ const placeOrder = async (data, user) => {
       }
       
     }
+    const generateRazorpayWallet=(userId,rechargeAmount)=>{
+      try {
+        return new Promise(async (resolve, reject) => {
+          const user=await User.findOne({_id:userId})
+          
+          
+          var options = {
+            amount: rechargeAmount * 100, 
+            currency: "INR",
+            receipt: "" + userId,
+          }; 
+          instance.orders.create(options, function (err,order) {
+            if (err) {
+              console.log(err,"jhgjhg");
+            } else {
+              resolve(order);
+            }
+          });
+        });
+      } catch (error) { 
+        console.log(error.message,'hi');
+      }
+    }
+    const updateWallet =  (userId, orderId,razorpayId,orderAmount) => {
+      try {
+        return new Promise(async (resolve, reject) => {
+          const rechargeAmount=(orderAmount/100)
+          console.log(rechargeAmount);
+          await User.updateOne(
+            { _id: userId },
+            {
+              $inc: {
+               wallet:rechargeAmount
+              },
+              $push:{walletTransaction:{
+                date: new Date(),
+                  type: 'wallet recharge',
+                  amount: rechargeAmount
+              }}
+
+            }
+          ).then(() => {
+              resolve();
+            });
+        });
+      } catch (error) { 
+        console.log(error.message);
+      }
+    }
 
     module.exports={checkStock,
         updateStock,
@@ -504,5 +556,7 @@ const placeOrder = async (data, user) => {
         generateRazorpay,
         verifyPayment,
         changePaymentStatus,
-        makePayment
+        makePayment,
+        generateRazorpayWallet,
+        updateWallet
     }

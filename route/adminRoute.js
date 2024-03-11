@@ -6,6 +6,7 @@ const categoryController=require('../controller/categoryController')
 const productController=require('../controller/productController')
 const couponController=require('../controller/couponController')
 const multer=require('../multer/multer')
+const bannerController=require('../controller/bannerController')
 
 
 
@@ -85,6 +86,19 @@ adminRoute.use(session({
 
   adminRoute.get('/salesReport',validate.requireAuth,adminController.getSalesReport)
   adminRoute.post('/salesReport',validate.requireAuth,adminController.postSalesReport)
+
+  //banner
+  adminRoute.get('/bannerList',validate.requireAuth,bannerController.bannerList)
+  adminRoute.get('/addBanner',validate.requireAuth,bannerController.addBannerGet)
+  adminRoute.post('/addBanner',validate.requireAuth,multer.addBannerupload,bannerController.addBannerPost)
+
+  adminRoute.get('/deleteBanner',validate.requireAuth,bannerController.deleteBanner)
+  adminRoute.get('/unListBanner',validate.requireAuth,bannerController.unListBanner)
+  adminRoute.get('/reListBanner',validate.requireAuth,bannerController.reListBanner)
+
+
+
+
 
 
  
