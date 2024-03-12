@@ -153,7 +153,7 @@ const loadRegister=async(req,res)=>{
             password:spassword,
             referralString:'',
             is_admin:0,
-            wallet:100,
+            wallet:0,
             
         })
         const userDataSave = await user.save()
@@ -161,11 +161,14 @@ const loadRegister=async(req,res)=>{
           
           userDataSave.referralString=`${req.headers.host}/signup?ref=${userDataSave._id}`
           console.log(userDataSave.referralString)
-          userDataSave.walletTransaction=[{date: new Date(),
+         const userDataModified= await userDataSave.save()
+          
+         if(req.session.ref){
+          userDataModified.walletTransaction=[{date: new Date(),
             type: 'Referral',
             amount: 100}]
-         await userDataSave.save()
-         if(req.session.ref){
+            userDataModified.wallet=100
+         await userDataModified.save()
           await User.findByIdAndUpdate({_id:req.session.ref},{$inc:{wallet:100},$push:{walletTransaction:{
             date: new Date(),
               type: 'Referral',

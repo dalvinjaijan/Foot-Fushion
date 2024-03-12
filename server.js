@@ -5,7 +5,7 @@ const nocache=require('nocache')
 
 const userRoute=require('./route/userRoute')
 const adminRoute=require('./route/adminRoute')
-
+require('dotenv').config
 const dbConnection=require("./config/config")
 
 dbConnection.connection()
@@ -13,7 +13,7 @@ app.set('view engine','ejs')
 
 
 app.use(express.urlencoded({extended:true}))
-app.use(nocache())
+app.use(nocache())      
 
 app.use(express.static(__dirname+'/public'));
 
@@ -30,7 +30,7 @@ app.use((err, req, res, next) => {
 //userRoute
 app.use("/",userRoute)
 
-//adminRoute
+//adminRoute    
 
 app.use((err, req, res, next) => {
     console.error(err.stack)

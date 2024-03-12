@@ -62,6 +62,7 @@ const loadDashboard = async(req,res)=>{
       }
 
     ])
+    console.log(orders,"h");
     
 
 

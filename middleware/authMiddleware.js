@@ -46,14 +46,17 @@ const checkUser = (req, res, next) => {
       } else {
         const user = await User.findById(decodedToken.id);
         res.locals.user = user;
-        if(user.is_Blocked==true && user.is_admin==0){
+        if(user){
+          if(user.is_Blocked==true && user.is_admin==0){
           res.cookie('jwt','',{maxAge:1})
           res.redirect('/')
         }
         else{
           next()
         }
-        ;
+        }else{
+          next()  
+        }
       }
     });
   } else {
