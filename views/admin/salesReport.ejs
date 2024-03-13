@@ -90,7 +90,7 @@
          <tr>
           <% details.forEach((order)=>{ %>
        
-          <td><%=order._id%></td>
+          <td><%=order.orderNumber%></td>
           <td><%=order.shippingAddress.item.name%> </td>
           
           <td><% order.productDetails.forEach((product,index)=>{ %>
