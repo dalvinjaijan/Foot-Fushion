@@ -199,9 +199,11 @@ const resendOTP = async (req, res) => {
      
   
       if (!userData) {
-        res.status(400).json({ message: 'Invalid or expired session' });
+        res.status(400).json({ message: 'Invalid or expired session' });       
       }
       const otp = otpHelper.generateOTP();
+      console.log(otp,"resend");
+      req.session.otp = otp 
 
       const mailSend =  otpHelper.mailer(email,otp)
       
